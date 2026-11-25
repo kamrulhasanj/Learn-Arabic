@@ -88,58 +88,54 @@ body.focus-mode .lesson-banner:hover {
   backdrop-filter: var(--blur);
   -webkit-backdrop-filter: var(--blur);
   border-bottom: 1px solid var(--glass-border);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-  padding: 12px 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  padding: 8px 16px;
 }
 
 .header-inner {
   max-width: 1200px;
   margin: 0 auto;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  min-width: 0;
 }
 
 .brand-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #0f5132, #198754);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  box-shadow: 0 6px 16px rgba(15, 81, 50, 0.25);
-  display: grid;
-  place-items: center;
-  font-family: var(--font-ar);
-  font-size: 24px;
-  color: #fde68a;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(15, 81, 50, 0.22);
+  overflow: hidden;
 }
 
 .brand h1 {
   margin: 0;
-  font-size: 1.18rem;
+  font-size: 1.08rem;
   font-weight: 700;
   letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 
-.brand p {
+.brand-sub {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   color: var(--text-muted);
 }
 
 .header-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .pill-btn {
@@ -149,14 +145,14 @@ body.focus-mode .lesson-banner:hover {
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 999px;
-  padding: 6px 13px;
+  padding: 5px 11px;
   font-family: var(--font-bn);
-  font-size: 0.83rem;
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   transition: all 0.18s ease;
 }
 
@@ -1075,4 +1071,188 @@ body.focus-mode .lesson-banner:hover {
   font-size: 0.83rem;
   margin-top: 28px;
   padding: 12px;
+}
+
+/* =========================================================
+   MOBILE APP EXPERIENCE: BOTTOM NAV + GLASS BOTTOM SHEET
+   ========================================================= */
+.mobile-bottom-nav {
+  display: none;
+}
+
+.sheet-backdrop {
+  display: none;
+}
+
+.sheet-handle,
+.sheet-close-btn {
+  display: none;
+}
+
+@media (max-width: 980px) {
+  .sheet-backdrop.open {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    background: rgba(10, 20, 15, 0.42);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  .inspector-card {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    z-index: 100;
+    max-height: 84vh;
+    overflow-y: auto;
+    border-radius: 26px 26px 0 0;
+    padding: 10px 18px calc(22px + env(safe-area-inset-bottom));
+    transform: translateY(110%);
+    transition: transform 0.28s cubic-bezier(0.2, 0.85, 0.3, 1);
+    background: var(--glass-strong);
+  }
+
+  .inspector-card.open {
+    transform: translateY(0);
+  }
+
+  .sheet-handle {
+    display: block;
+    width: 42px;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--border);
+    margin: 2px auto 10px;
+  }
+
+  .sheet-close-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--glass-subtle);
+    color: var(--text);
+    font-size: 1rem;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .brand-sub,
+  .btn-text-hide-sm {
+    display: none;
+  }
+
+  .brand h1 {
+    font-size: 1rem;
+  }
+
+  .streak-pill {
+    font-size: 0.74rem;
+    padding: 4px 8px;
+  }
+
+  .pill-btn {
+    padding: 5px 9px;
+    font-size: 0.78rem;
+  }
+
+  /* Hide top tabs, show native app bottom nav */
+  .nav-tabs {
+    display: none;
+  }
+
+  .main-wrap {
+    margin-top: 12px;
+    padding: 0 12px calc(92px + env(safe-area-inset-bottom));
+  }
+
+  .lesson-banner {
+    padding: 12px 14px;
+    border-radius: 16px;
+  }
+
+  .dua-ar {
+    font-size: 1.35rem;
+  }
+
+  .progress-box {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .progress-bar-wrap {
+    width: 100%;
+  }
+
+  .diagram-card {
+    position: static;
+  }
+
+  .footer-note {
+    display: none;
+  }
+
+  .mobile-bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 80;
+    background: var(--glass-strong);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border-top: 1px solid var(--glass-border);
+    box-shadow: 0 -6px 28px rgba(0, 0, 0, 0.1);
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+    gap: 2px;
+  }
+
+  .bottom-nav-btn {
+    background: transparent;
+    border: none;
+    border-radius: 14px;
+    padding: 6px 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    color: var(--text-muted);
+    font-family: var(--font-bn);
+    cursor: pointer;
+    transition: all 0.18s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .bnav-icon {
+    font-size: 1.25rem;
+    line-height: 1.1;
+    padding: 3px 12px;
+    border-radius: 999px;
+    transition: background 0.18s ease;
+  }
+
+  .bnav-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+
+  .bottom-nav-btn.active {
+    color: var(--primary);
+  }
+
+  .bottom-nav-btn.active .bnav-icon {
+    background: var(--primary-soft);
+  }
 }

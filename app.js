@@ -65,7 +65,7 @@
     }
 
     document.getElementById("streakPill").textContent =
-      `🔥 স্ট্রিক: ${toBnNum(streak)} দিন • আজ: ${toBnNum(todayCount)}/১০`;
+      `🔥 ${toBnNum(streak)} • ${toBnNum(todayCount)}/১০`;
   }
 
   // Audio playback
@@ -118,7 +118,7 @@
   const themeBtn = document.getElementById("themeBtn");
   if ((localStorage.getItem("madani_theme") || "light") === "dark") {
     document.documentElement.setAttribute("data-theme", "dark");
-    themeBtn.textContent = "☀️ দিন মোড";
+    themeBtn.textContent = "☀️";
   }
 
   themeBtn.addEventListener("click", () => {
@@ -126,11 +126,11 @@
     if (isDark) {
       document.documentElement.removeAttribute("data-theme");
       localStorage.setItem("madani_theme", "light");
-      themeBtn.textContent = "🌙 রাত মোড";
+      themeBtn.textContent = "🌙";
     } else {
       document.documentElement.setAttribute("data-theme", "dark");
       localStorage.setItem("madani_theme", "dark");
-      themeBtn.textContent = "☀️ দিন মোড";
+      themeBtn.textContent = "☀️";
     }
   });
 
@@ -148,9 +148,10 @@
     speedBtn.classList.toggle("active", playbackRate < 1.0);
   });
 
-  // Tab navigation
+  // Tab navigation (Top + Mobile Bottom Nav)
   function switchTab(tabName) {
-    document.querySelectorAll(".tab-btn").forEach((btn) => {
+    closeMobileSheet();
+    document.querySelectorAll(".tab-btn, .bottom-nav-btn").forEach((btn) => {
       const active = btn.dataset.tab === tabName;
       btn.classList.toggle("active", active);
       btn.setAttribute("aria-selected", String(active));
@@ -158,11 +159,27 @@
     document.querySelectorAll(".tab-panel").forEach((panel) => {
       panel.classList.toggle("active", panel.id === `panel-${tabName}`);
     });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  document.querySelectorAll(".tab-btn").forEach((btn) => {
+  document.querySelectorAll(".tab-btn, .bottom-nav-btn").forEach((btn) => {
     btn.addEventListener("click", () => switchTab(btn.dataset.tab));
   });
+
+  // Mobile Bottom Sheet for Letter Inspector
+  const sheetBackdrop = document.getElementById("sheetBackdrop");
+  const inspectorEl = document.getElementById("inspectorCard");
+  function openMobileSheet() {
+    if (window.innerWidth <= 980) {
+      sheetBackdrop.classList.add("open");
+      inspectorEl.classList.add("open");
+    }
+  }
+  function closeMobileSheet() {
+    sheetBackdrop.classList.remove("open");
+    inspectorEl.classList.remove("open");
+  }
+  sheetBackdrop.addEventListener("click", closeMobileSheet);
 
   // TAB 1: Alphabet Grid + Inspector + Voice Recorder
   function renderAlphabetGrid() {
@@ -218,7 +235,10 @@
     cards.forEach((c, i) => c.classList.toggle("selected", i === selectedIndex));
 
     renderInspector(letter);
-    if (shouldPlay) playLetter(letter, cards[selectedIndex]);
+    if (shouldPlay) {
+      playLetter(letter, cards[selectedIndex]);
+      openMobileSheet();
+    }
   }
 
   function renderInspector(letter) {
@@ -231,6 +251,7 @@
       .join(" ");
 
     panel.innerHTML = `
+      <div class="sheet-handle" aria-hidden="true"></div>
       <div class="inspector-top">
         <div style="display:flex; align-items:center; gap:12px;">
           <div class="inspector-big-ar" id="inspectorPlayBig" title="শুনতে ক্লিক করুন">${letter.char}</div>
@@ -239,7 +260,10 @@
             <p>ক্রম: ${toBnNum(letter.order)} • ${letter.nuqta}</p>
           </div>
         </div>
-        <button class="btn btn-primary" id="inspectorReplayBtn" type="button">🔊 শুনুন</button>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <button class="btn btn-primary" id="inspectorReplayBtn" type="button">🔊 শুনুন</button>
+          <button class="sheet-close-btn" id="sheetCloseBtn" type="button" aria-label="বন্ধ করুন">✕</button>
+        </div>
       </div>
 
       <div style="margin-top:10px; font-weight:600; font-size:0.88rem; color:var(--primary);">
@@ -305,6 +329,7 @@
     };
     document.getElementById("inspectorPlayBig").addEventListener("click", replay);
     document.getElementById("inspectorReplayBtn").addEventListener("click", replay);
+    document.getElementById("sheetCloseBtn").addEventListener("click", closeMobileSheet);
     document.getElementById("prevLetterBtn").addEventListener("click", () => {
       stopAutoPlay();
       selectLetter(selectedIndex - 1, true);

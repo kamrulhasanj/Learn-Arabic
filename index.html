@@ -19,27 +19,27 @@
     <div class="header-inner">
       <div class="brand">
         <div class="brand-icon" aria-hidden="true">
-          <img src="icons/logo.svg" alt="মাদানী কায়দা লোগো" style="width:100%; height:100%; border-radius:12px; display:block;" />
+          <img src="icons/logo.svg" alt="Learn Arabic লোগো" style="width:100%; height:100%; border-radius:10px; display:block;" />
         </div>
         <div>
-          <h1>মাদানী কায়দা — আরবি ও কোরআন শিক্ষা</h1>
-          <p>২৯ হরফ, মুরাক্কাব, হরকত, ১৭ মাখরাজ ও স্মার্ট অনুশীলন (১০০% অফলাইন)</p>
+          <h1>Learn Arabic</h1>
+          <p class="brand-sub">মাদানী কায়দা • অফলাইন আরবি ও কোরআন শিক্ষা</p>
         </div>
       </div>
 
       <div class="header-controls">
-        <span class="streak-pill" id="streakPill" title="দৈনিক অনুশীলন">🔥 স্ট্রিক: ১ দিন • আজ: ০/১০</span>
-        <button class="pill-btn" id="installAppBtn" type="button" style="display:none;" title="ডিভাইসে অ্যাপ হিসেবে ইনস্টল করুন">
-          📲 ইনস্টল
+        <span class="streak-pill" id="streakPill" title="দৈনিক অনুশীলন">🔥 ১ • ০/১০</span>
+        <button class="pill-btn" id="installAppBtn" type="button" style="display:none;" title="অ্যাপ ইনস্টল করুন">
+          📲 <span class="btn-text-hide-sm">ইনস্টল</span>
         </button>
-        <button class="pill-btn" id="focusBtn" type="button" title="অতিরিক্ত অংশ ঝাপসা করে মনোযোগ ধরে রাখুন">
-          🎯 মনোযোগ মোড
+        <button class="pill-btn" id="focusBtn" type="button" title="মনোযোগ মোড">
+          🎯 <span class="btn-text-hide-sm">মনোযোগ</span>
         </button>
-        <button class="pill-btn" id="speedBtn" type="button" title="অডিওর গতি পরিবর্তন করুন">
-          গতি: <span id="speedLabel">১.০x</span>
+        <button class="pill-btn" id="speedBtn" type="button" title="অডিওর গতি">
+          <span id="speedLabel">১.০x</span>
         </button>
-        <button class="pill-btn" id="themeBtn" type="button" title="দিন/রাত থিম পরিবর্তন">
-          🌙 রাত মোড
+        <button class="pill-btn" id="themeBtn" type="button" title="দিন/রাত থিম">
+          🌙
         </button>
       </div>
     </div>
@@ -106,6 +106,7 @@
           <div class="qaida-grid" id="alphabetGrid" aria-label="আরবি বর্ণমালা ডান থেকে বাম"></div>
         </div>
 
+        <div class="sheet-backdrop" id="sheetBackdrop"></div>
         <aside class="inspector-card" id="inspectorCard" aria-live="polite"></aside>
       </div>
     </section>
@@ -346,9 +347,33 @@
     </section>
 
     <p class="footer-note">
-      মাদানী কায়দা অফলাইন ওয়েব অ্যাপ্লিকেশন • কীবোর্ড শর্টকাট: তীর চিহ্ন (←/→) দিয়ে হরফ পরিবর্তন করুন, Space চাপলে উচ্চারণ শুনবেন।
+      Learn Arabic • মাদানী কায়দা অফলাইন ওয়েব অ্যাপ্লিকেশন • তীর চিহ্ন (←/→) ও Space দিয়ে নিয়ন্ত্রণ করুন।
     </p>
   </main>
+
+  <!-- Mobile App Bottom Navigation Bar -->
+  <nav class="mobile-bottom-nav" role="tablist" aria-label="মোবাইল নেভিগেশন">
+    <button class="bottom-nav-btn active" data-tab="alphabet" role="tab" aria-selected="true" type="button">
+      <span class="bnav-icon">📖</span>
+      <span class="bnav-label">বর্ণমালা</span>
+    </button>
+    <button class="bottom-nav-btn" data-tab="murakkab" role="tab" aria-selected="false" type="button">
+      <span class="bnav-icon">🔗</span>
+      <span class="bnav-label">মুরাক্কাব</span>
+    </button>
+    <button class="bottom-nav-btn" data-tab="harakat" role="tab" aria-selected="false" type="button">
+      <span class="bnav-icon">✨</span>
+      <span class="bnav-label">হরকত</span>
+    </button>
+    <button class="bottom-nav-btn" data-tab="makhraj" role="tab" aria-selected="false" type="button">
+      <span class="bnav-icon">🗣️</span>
+      <span class="bnav-label">মাখরাজ</span>
+    </button>
+    <button class="bottom-nav-btn" data-tab="quiz" role="tab" aria-selected="false" type="button">
+      <span class="bnav-icon">🎯</span>
+      <span class="bnav-label">পরীক্ষা</span>
+    </button>
+  </nav>
 
   <script src="data.js"></script>
   <script src="app.js"></script>

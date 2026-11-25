@@ -1,4 +1,4 @@
-const CACHE_NAME = "madani-qaida-v4";
+const CACHE_NAME = "madani-qaida-v5";
 const ASSETS = [
   "./",
   "./index.html",

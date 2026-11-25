@@ -29,9 +29,7 @@
 
       <div class="header-controls">
         <span class="streak-pill" id="streakPill" title="দৈনিক অনুশীলন">🔥 ১ • ০/১০</span>
-        <button class="pill-btn focus-exit-pill" id="focusExitBtn" type="button" title="মনোযোগ মোড বন্ধ করুন">
-          🎯 <span class="btn-text-hide-sm">ফোকাস বন্ধ</span>
-        </button>
+        <button class="pill-btn focus-exit-pill" id="focusExitBtn" type="button" title="মনোযোগ মোড বন্ধ করুন" aria-label="মনোযোগ মোড বন্ধ করুন">🎯</button>
         <button class="pill-btn" id="installAppBtn" type="button" style="display:none;" title="অ্যাপ ইনস্টল করুন">
           📲 <span class="btn-text-hide-sm">ইনস্টল</span>
         </button>
@@ -76,34 +74,34 @@
     <section class="tab-panel active" id="panel-alphabet">
       <div class="lesson-banner">
         <div class="dua-box">
-          <div class="ar" style="font-size: 1.05rem; color: var(--text-muted);">
+          <div class="ar dua-text-hide" style="font-size: 1.05rem; color: var(--text-muted);">
             أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ
           </div>
-          <div class="ar" style="font-size: 1.05rem; color: var(--text-muted);">
+          <div class="ar dua-text-hide" style="font-size: 1.05rem; color: var(--text-muted);">
             بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ
           </div>
-          <div class="ar dua-ar" id="duaText">
+          <div class="ar dua-ar dua-text-hide" id="duaText">
             رَبِّ يَسِّرْ وَلَا تُعَسِّرْ وَتَمِّمْ عَلَيْنَا بِالْخَيْرِ
           </div>
-          <p class="dua-bn">
+          <p class="dua-bn dua-text-hide">
             যেকোনো হরফে ক্লিক করলে উচ্চারণ, মাখরাজ, ৪টি রূপ এবং নিজের কণ্ঠ রেকর্ড করে মিলিয়ে দেখার অপশন পাবেন।
           </p>
           <div style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;">
-            <button class="btn btn-gold" id="playDuaBtn" type="button">🔊 দোয়া শুনুন</button>
+            <button class="btn btn-gold dua-text-hide" id="playDuaBtn" type="button">🔊 দোয়া শুনুন</button>
             <button class="btn btn-primary" id="autoPlayBtn" type="button">▶ সব হরফ ধারাবাহিক শুনুন</button>
             <button class="btn" id="loopAudioBtn" type="button" title="হ্যান্ডস-ফ্রি লুপ মোড">🔁 লুপ: বন্ধ</button>
           </div>
         </div>
 
         <div class="progress-box">
-          <div style="font-size: 0.9rem; font-weight: 600;">
-            অগ্রগতি: <span id="progressText">০ / ৩০</span> হরফ অনুশীলিত
+          <div class="progress-label" style="font-size: 0.86rem; font-weight: 600; white-space:nowrap;">
+            অগ্রগতি: <span id="progressText">০ / ৩০</span>
           </div>
           <div class="progress-bar-wrap">
             <div class="progress-bar-fill" id="progressBar"></div>
           </div>
-          <button class="btn" id="resetProgressBtn" type="button" style="font-size: 0.78rem; padding: 4px 10px;">
-            রিসেট করুন
+          <button class="btn" id="resetProgressBtn" type="button" style="font-size: 0.75rem; padding: 3px 9px;">
+            রিসেট
           </button>
         </div>
       </div>

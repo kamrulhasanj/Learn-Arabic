@@ -1,0 +1,34 @@
+{
+  "id": "./",
+  "name": "মাদানী কায়দা — আরবি বর্ণমালা ও মাখরাজ",
+  "short_name": "মাদানী কায়দা",
+  "description": "নন-এরাবিক শিক্ষার্থীদের জন্য সম্পূর্ণ অফলাইন আরবি বর্ণমালা, মুরাক্কাব, হরকত, ১৭টি মাখরাজ এবং স্মার্ট অনুশীলন অ্যাপ।",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f4f2eb",
+  "theme_color": "#0f5132",
+  "lang": "bn",
+  "categories": ["education", "books"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

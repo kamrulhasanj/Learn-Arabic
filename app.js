@@ -15,7 +15,6 @@
   let learnedSet = new Set(JSON.parse(localStorage.getItem("madani_learned") || "[]"));
   let weakSet = new Set(JSON.parse(localStorage.getItem("madani_weak") || "[]"));
   let masteryMap = JSON.parse(localStorage.getItem("madani_mastery") || "{}");
-  let loopAudio = false;
   let revealAllExam = false;
 
   // Voice recorder state
@@ -74,8 +73,10 @@
       localStorage.setItem("madani_today_count", String(todayCount));
     }
 
-    document.getElementById("streakPill").textContent =
-      `🔥 ${toBnNum(streak)} • ${toBnNum(todayCount)}/১০`;
+    const streakEl = document.getElementById("streakPill");
+    if (streakEl) {
+      streakEl.textContent = `🔥 ${toBnNum(streak)} • ${toBnNum(todayCount)}টি`;
+    }
   }
 
   // Audio playback
@@ -139,6 +140,7 @@
   let settings = { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem("madani_settings") || "{}") };
 
   const themeBtn = document.getElementById("themeBtn");
+  const focusToggleBtn = document.getElementById("focusToggleBtn");
   const setFocusToggle = document.getElementById("setFocusToggle");
   const setDarkToggle = document.getElementById("setDarkToggle");
   const setBnNamesToggle = document.getElementById("setBnNamesToggle");
@@ -153,6 +155,7 @@
   function applySettings() {
     localStorage.setItem("madani_settings", JSON.stringify(settings));
     document.body.classList.toggle("focus-mode", settings.focusMode);
+    if (focusToggleBtn) focusToggleBtn.classList.toggle("active", settings.focusMode);
     document.body.classList.toggle("hide-bn-names", !settings.showBnNames);
     document.body.classList.toggle("hide-makhraj-badges", !settings.showMakhrajBadges);
     document.body.classList.toggle("tajweed-colors", settings.tajweedColors);
@@ -226,8 +229,8 @@
   document.getElementById("settingsBtn").addEventListener("click", openSettings);
   document.getElementById("settingsCloseBtn").addEventListener("click", closeSettings);
   settingsBackdrop.addEventListener("click", closeSettings);
-  document.getElementById("focusExitBtn").addEventListener("click", () => {
-    settings.focusMode = false;
+  focusToggleBtn.addEventListener("click", () => {
+    settings.focusMode = !settings.focusMode;
     applySettings();
   });
 
@@ -637,13 +640,6 @@
     playAudioFile("audio/dua_rabbana.mp3");
   });
 
-  const loopAudioBtn = document.getElementById("loopAudioBtn");
-  loopAudioBtn.addEventListener("click", () => {
-    loopAudio = !loopAudio;
-    loopAudioBtn.classList.toggle("btn-primary", loopAudio);
-    loopAudioBtn.textContent = loopAudio ? "🔁 লুপ: চালু" : "🔁 লুপ: বন্ধ";
-  });
-
   const autoPlayBtn = document.getElementById("autoPlayBtn");
   function stopAutoPlay() {
     isAutoPlaying = false;
@@ -652,16 +648,9 @@
   }
 
   function runAutoPlayStep(idx) {
-    if (!isAutoPlaying) {
+    if (!isAutoPlaying || idx >= LETTERS.length) {
       stopAutoPlay();
       return;
-    }
-    if (idx >= LETTERS.length) {
-      if (loopAudio) idx = 0;
-      else {
-        stopAutoPlay();
-        return;
-      }
     }
     selectLetter(idx, false);
     const letter = LETTERS[selectedIndex];
@@ -1949,16 +1938,24 @@
         optionsBox.appendChild(btn);
       });
     } else if (quizMode === "word") {
-      const w = DATA.wordBreakdowns[Math.floor(Math.random() * DATA.wordBreakdowns.length)];
-      const midPart = w.parts[1];
-      const midLetter = LETTER_BY_ID[midPart.letterId];
-      const wDistractors = shuffle(basePool.filter((l) => l.id !== midLetter.id)).slice(0, 3);
-      const wOptions = shuffle([midLetter, ...wDistractors]);
+      const pool = window.QURAN_WORDS && window.QURAN_WORDS.length ? window.QURAN_WORDS : [];
+      const w = pool[Math.floor(Math.random() * pool.length)];
+      const posChoices = [
+        { key: "firstId", label: "শুরুর (ডানের) হরফ" },
+        { key: "midId", label: "মাঝের হরফ" },
+        { key: "lastId", label: "শেষের (বামের) হরফ" },
+      ];
+      const chosenPos = posChoices[Math.floor(Math.random() * posChoices.length)];
+      const ansId = w[chosenPos.key];
+      const ansLetter = LETTER_BY_ID[ansId];
+      const wDistractors = shuffle(basePool.filter((l) => l.id !== ansLetter.id)).slice(0, 3);
+      const wOptions = shuffle([ansLetter, ...wDistractors]);
 
       promptBox.innerHTML = `
-        <p style="margin:0 0 6px; font-weight:600;">এই শব্দটির <strong>মাঝের হরফ</strong> কোনটি?</p>
+        <p style="margin:0 0 6px; font-weight:600;">এই শব্দটির <strong>${chosenPos.label}</strong> কোনটি?</p>
         <div class="ar" style="font-size:3.2rem; color:var(--primary); line-height:1.3;">${w.word}</div>
-        <button class="btn" id="quizPlayAudioBtn" type="button" style="margin-top:6px; padding:4px 12px; font-size:0.82rem;">🔊 শব্দ শুনুন</button>
+        <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">অর্থ: ${w.bn}</div>
+        <button class="btn" id="quizPlayAudioBtn" type="button" style="margin-top:8px; padding:4px 12px; font-size:0.82rem;">🔊 শব্দ শুনুন</button>
       `;
       document.getElementById("quizPlayAudioBtn").addEventListener("click", () => playAudioFile(w.audio));
       if (shouldPlay) playAudioFile(w.audio);
@@ -1968,7 +1965,7 @@
         btn.type = "button";
         btn.className = "quiz-opt-btn";
         btn.innerHTML = `<span class="ar">${opt.char}</span><span>${opt.bnName}</span>`;
-        btn.addEventListener("click", () => handleQuizAnswer(btn, opt.id === midLetter.id, midLetter));
+        btn.addEventListener("click", () => handleQuizAnswer(btn, opt.id === ansLetter.id, ansLetter));
         optionsBox.appendChild(btn);
       });
     } else if (quizMode === "pairs") {
@@ -2142,6 +2139,32 @@
     }
   }, { passive: true });
 
+  // Force Update App (keeps all localStorage progress & practice data intact)
+  const forceUpdateBtn = document.getElementById("forceUpdateAppBtn");
+  const updateCheckStatus = document.getElementById("updateCheckStatus");
+  if (forceUpdateBtn) {
+    forceUpdateBtn.addEventListener("click", async () => {
+      updateCheckStatus.style.display = "block";
+      if (!navigator.onLine) {
+        updateCheckStatus.textContent = "আপনি এখন অফলাইনে আছেন। ইন্টারনেট সংযোগ দিয়ে আবার চেষ্টা করুন।";
+        return;
+      }
+      updateCheckStatus.textContent = "আপডেট চেক করা হচ্ছে... আপনার সব ডেটা সুরক্ষিত আছে।";
+      forceUpdateBtn.disabled = true;
+      try {
+        if ("caches" in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map((k) => caches.delete(k)));
+        }
+        if ("serviceWorker" in navigator) {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(regs.map((r) => r.update().catch(() => {})));
+        }
+      } catch {}
+      window.location.reload();
+    });
+  }
+
   // Register Service Worker & show non-intrusive update toast when a new version activates
   const updateToast = document.getElementById("updateToast");
   document.getElementById("reloadAppBtn").addEventListener("click", () => window.location.reload());
@@ -2161,20 +2184,54 @@
 
   let deferredInstallPrompt = null;
   const installAppBtn = document.getElementById("installAppBtn");
+  const installAppRow = document.getElementById("installAppRow");
+  const installBanner = document.getElementById("installBanner");
+  const installBannerSub = document.getElementById("installBannerSub");
+  const bannerInstallBtn = document.getElementById("bannerInstallBtn");
+  const bannerDismissBtn = document.getElementById("bannerDismissBtn");
+
+  const isStandalone =
+    window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+  async function triggerPwaInstall() {
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      if (installAppRow) installAppRow.style.display = "none";
+      if (installBanner) installBanner.classList.remove("show");
+    } else if (isIos) {
+      installBannerSub.textContent = "Safari-এর নিচে Share (⬆️) আইকনে ট্যাপ করে 'Add to Home Screen' সিলেক্ট করুন।";
+      bannerInstallBtn.style.display = "none";
+    }
+  }
+
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferredInstallPrompt = e;
-    installAppBtn.style.display = "inline-flex";
+    if (installAppRow) installAppRow.style.display = "flex";
+    if (!isStandalone && !sessionStorage.getItem("madani_install_dismissed")) {
+      installBanner.classList.add("show");
+    }
   });
-  installAppBtn.addEventListener("click", async () => {
-    if (!deferredInstallPrompt) return;
-    deferredInstallPrompt.prompt();
-    await deferredInstallPrompt.userChoice;
-    deferredInstallPrompt = null;
-    installAppBtn.style.display = "none";
+
+  if (isIos && !isStandalone && !sessionStorage.getItem("madani_install_dismissed")) {
+    installBannerSub.textContent = "Safari-এ Share (⬆️) → 'Add to Home Screen' দিয়ে ইনস্টল করুন";
+    bannerInstallBtn.style.display = "none";
+    setTimeout(() => installBanner.classList.add("show"), 1200);
+  }
+
+  installAppBtn.addEventListener("click", triggerPwaInstall);
+  bannerInstallBtn.addEventListener("click", triggerPwaInstall);
+  bannerDismissBtn.addEventListener("click", () => {
+    installBanner.classList.remove("show");
+    sessionStorage.setItem("madani_install_dismissed", "1");
   });
+
   window.addEventListener("appinstalled", () => {
-    installAppBtn.style.display = "none";
+    if (installAppRow) installAppRow.style.display = "none";
+    if (installBanner) installBanner.classList.remove("show");
   });
 
   // Interactive Spotlight Coachmark App Tour
@@ -2216,10 +2273,16 @@
       desc: "৯ ধরনের কুইজ (৬০সে স্পিড চ্যালেঞ্জ, স্মার্ট রিভিশন), অ্যানিমেটেড হাতে লেখা গাইড ও Mastery Heatmap এখানে।",
     },
     {
+      selector: "#focusToggleBtn",
+      tab: "alphabet",
+      title: "🎯 মনোযোগ মোড (Focus Mode)",
+      desc: "উপরের 🎯 আইকনে ট্যাপ করলে দোয়া ও বাড়তি লেখা লুকিয়ে যাবে—যাতে কেবল হরফ ও অডিওতে পুরো মনোযোগ দিতে পারেন।",
+    },
+    {
       selector: "#settingsBtn",
       tab: "alphabet",
-      title: "⚙️ অ্যাপ সেটিংস ও কন্ট্রোল",
-      desc: "ডার্ক মোড, ফোকাস মোড, বাংলা নাম লুকানো, আরবি ফন্ট সাইজ এবং অগ্রগতি ব্যাকআপ এখান থেকে নিয়ন্ত্রণ করুন।",
+      title: "⚙️ সেটিংস, অ্যাপ ইনস্টল ও আপডেট",
+      desc: "সেটিংসের ভেতর থেকেই অফলাইনে ব্যবহারের জন্য অ্যাপ 📲 ইনস্টল, অগ্রগতি না হারিয়ে 🔄 আপডেট, ডার্ক মোড, ফন্ট সাইজ ও ব্যাকআপ নিয়ন্ত্রণ করতে পারবেন।",
     },
   ];
 
@@ -2290,7 +2353,6 @@
     localStorage.setItem("madani_tour_seen", "1");
   }
 
-  document.getElementById("tourBtn").addEventListener("click", openTour);
   document.getElementById("openTourFromSettingsBtn").addEventListener("click", () => {
     closeSettings();
     openTour();

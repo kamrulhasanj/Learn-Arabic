@@ -100,20 +100,6 @@ body.focus-mode .letter-card.selected {
   opacity: 1;
   box-shadow: 0 0 0 3px var(--primary), 0 10px 26px rgba(15, 81, 50, 0.24);
 }
-.pill-btn.focus-exit-pill {
-  display: none;
-  background: var(--primary-solid, var(--primary));
-  color: #fff;
-  border-color: var(--primary-solid, var(--primary));
-  min-width: 30px;
-  min-height: 28px;
-  justify-content: center;
-  position: relative;
-  z-index: 5;
-}
-body.focus-mode .pill-btn.focus-exit-pill {
-  display: inline-flex;
-}
 
 /* Apple Glass Header */
 .app-header {
@@ -1880,4 +1866,83 @@ body.tajweed-colors[data-theme="dark"] .tj-heavy { color: #a78bfa; }
   color: var(--primary);
   border-radius: 999px;
   padding: 2px 10px;
+}
+
+.top-taawudh-bar {
+  width: 100%;
+  background: #0f5132;
+  color: #ffffff;
+  text-align: center;
+  font-size: 1.25rem;
+  line-height: 1.65;
+  padding: 6px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+[data-theme="dark"] .top-taawudh-bar {
+  background: #0a2e1d;
+  color: #eef6f1;
+  border-bottom: 1px solid rgba(74, 222, 151, 0.22);
+}
+
+.dev-credit-box {
+  text-align: center;
+  padding: 12px 10px 4px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+
+.dev-social-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.social-icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  display: inline-grid;
+  place-items: center;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+  text-decoration: none;
+}
+
+.social-icon-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+}
+
+/* Auto PWA Install Banner */
+.install-banner {
+  display: none;
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 115;
+  width: min(94vw, 480px);
+  background: var(--glass-strong);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1.5px solid var(--primary);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.22);
+  border-radius: 18px;
+  padding: 10px 12px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.install-banner.show {
+  display: flex;
+  animation: fadeSlide 0.25s ease;
+}
+
+@media (max-width: 768px) {
+  .install-banner {
+    bottom: calc(74px + env(safe-area-inset-bottom));
+  }
 }

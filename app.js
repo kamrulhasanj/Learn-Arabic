@@ -14,6 +14,8 @@
   let isAutoPlaying = false;
   let learnedSet = new Set(JSON.parse(localStorage.getItem("madani_learned") || "[]"));
   let weakSet = new Set(JSON.parse(localStorage.getItem("madani_weak") || "[]"));
+  let masteryMap = JSON.parse(localStorage.getItem("madani_mastery") || "{}");
+  let loopAudio = false;
   let revealAllExam = false;
 
   // Voice recorder state
@@ -31,9 +33,17 @@
   let quizTotal = 0;
   let quizStreak = 0;
   let quizAnswered = false;
+  let timedBest = Number(localStorage.getItem("madani_timed_best") || "0");
+  let timedLeft = 60;
+  let timedScore = 0;
+  let timedTimerId = null;
+  let timedRunning = false;
 
   // Tracing state
-  let traceIndex = 0;
+  let traceIndex = Number(localStorage.getItem("madani_trace_index") || "0");
+  if (traceIndex < 0 || traceIndex >= LETTERS.length) traceIndex = 0;
+  let traceDemoSpeed = 0.5;
+  let traceDemoRaf = null;
 
   // Daily Streak & Goal
   function getDateKey(dateObj = new Date()) {
@@ -123,6 +133,7 @@
     autoStopRecorder: true,
     soundFx: true,
     haptic: true,
+    tajweedColors: true,
     fontScale: 1.0,
   };
   let settings = { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem("madani_settings") || "{}") };
@@ -135,6 +146,7 @@
   const setAutoStopToggle = document.getElementById("setAutoStopToggle");
   const setSoundFxToggle = document.getElementById("setSoundFxToggle");
   const setHapticToggle = document.getElementById("setHapticToggle");
+  const setTajweedColorToggle = document.getElementById("setTajweedColorToggle");
   const setFontScale = document.getElementById("setFontScale");
   const fontScaleLabel = document.getElementById("fontScaleLabel");
 
@@ -143,6 +155,7 @@
     document.body.classList.toggle("focus-mode", settings.focusMode);
     document.body.classList.toggle("hide-bn-names", !settings.showBnNames);
     document.body.classList.toggle("hide-makhraj-badges", !settings.showMakhrajBadges);
+    document.body.classList.toggle("tajweed-colors", settings.tajweedColors);
     document.documentElement.style.setProperty("--ar-scale", String(settings.fontScale));
 
     if (settings.darkTheme) {
@@ -162,6 +175,7 @@
     setAutoStopToggle.checked = settings.autoStopRecorder;
     setSoundFxToggle.checked = settings.soundFx;
     setHapticToggle.checked = settings.haptic;
+    setTajweedColorToggle.checked = settings.tajweedColors;
     setFontScale.value = String(settings.fontScale);
     fontScaleLabel.textContent = `${toBnNum(Math.round(settings.fontScale * 100))}%`;
   }
@@ -224,6 +238,7 @@
   setAutoStopToggle.addEventListener("change", () => { settings.autoStopRecorder = setAutoStopToggle.checked; applySettings(); });
   setSoundFxToggle.addEventListener("change", () => { settings.soundFx = setSoundFxToggle.checked; applySettings(); });
   setHapticToggle.addEventListener("change", () => { settings.haptic = setHapticToggle.checked; applySettings(); });
+  setTajweedColorToggle.addEventListener("change", () => { settings.tajweedColors = setTajweedColorToggle.checked; applySettings(); });
   setFontScale.addEventListener("input", () => { settings.fontScale = Number(setFontScale.value); applySettings(); });
 
   // Export & Import Backup
@@ -283,6 +298,7 @@
 
   // Tab navigation (Top + Mobile Bottom Nav)
   function switchTab(tabName) {
+    localStorage.setItem("madani_active_tab", tabName);
     closeMobileSheet();
     document.querySelectorAll(".tab-btn, .bottom-nav-btn").forEach((btn) => {
       const active = btn.dataset.tab === tabName;
@@ -292,6 +308,9 @@
     document.querySelectorAll(".tab-panel").forEach((panel) => {
       panel.classList.toggle("active", panel.id === `panel-${tabName}`);
     });
+    if (tabName === "quiz" && localStorage.getItem("madani_practice_subtab") === "trace-view") {
+      drawTraceWatermark();
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -618,6 +637,13 @@
     playAudioFile("audio/dua_rabbana.mp3");
   });
 
+  const loopAudioBtn = document.getElementById("loopAudioBtn");
+  loopAudioBtn.addEventListener("click", () => {
+    loopAudio = !loopAudio;
+    loopAudioBtn.classList.toggle("btn-primary", loopAudio);
+    loopAudioBtn.textContent = loopAudio ? "🔁 লুপ: চালু" : "🔁 লুপ: বন্ধ";
+  });
+
   const autoPlayBtn = document.getElementById("autoPlayBtn");
   function stopAutoPlay() {
     isAutoPlaying = false;
@@ -626,9 +652,16 @@
   }
 
   function runAutoPlayStep(idx) {
-    if (!isAutoPlaying || idx >= LETTERS.length) {
+    if (!isAutoPlaying) {
       stopAutoPlay();
       return;
+    }
+    if (idx >= LETTERS.length) {
+      if (loopAudio) idx = 0;
+      else {
+        stopAutoPlay();
+        return;
+      }
     }
     selectLetter(idx, false);
     const letter = LETTERS[selectedIndex];
@@ -879,6 +912,15 @@
       mGrid.appendChild(btn);
     });
 
+    function getTajweedClass(rule) {
+      if (!rule) return "";
+      if (rule.includes("কলকলাহ")) return "tj-qalqalah";
+      if (rule.includes("গুন্নাহ")) return "tj-ghunnah";
+      if (rule.includes("মাদ") || rule.includes("খাঁড়া") || rule.includes("উল্টা")) return "tj-madd";
+      if (rule.includes("মোটা") || rule.includes("হলকী")) return "tj-heavy";
+      return "";
+    }
+
     const surahContainer = document.getElementById("surahContainer");
     surahContainer.innerHTML = "";
     DATA.surahs.forEach((surah) => {
@@ -891,7 +933,7 @@
             ${ayah
               .map(
                 (w) => `
-              <button type="button" class="surah-word" data-audio="${w.audio}">
+              <button type="button" class="surah-word ${getTajweedClass(w.rule)}" data-audio="${w.audio}">
                 <span class="ar-word">${w.ar}</span>
                 <span class="bn-word">${w.bn}</span>
                 <span class="rule-word">${w.rule}</span>
@@ -924,6 +966,7 @@
 
   document.querySelectorAll(".harakat-subtab-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
+      localStorage.setItem("madani_harakat_subtab", btn.dataset.hview);
       document.querySelectorAll(".harakat-subtab-btn").forEach((b) => b.classList.remove("btn-primary", "active"));
       btn.classList.add("btn-primary", "active");
       document.querySelectorAll(".harakat-subview").forEach((v) => {
@@ -1030,14 +1073,21 @@
   });
 
   // TAB 5: Practice Sub-views (Quiz, Confusing Pairs, Tracing)
-  document.querySelectorAll(".practice-view-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".practice-view-btn").forEach((b) => b.classList.remove("btn-primary", "active"));
-      btn.classList.add("btn-primary", "active");
-      document.querySelectorAll(".practice-subview").forEach((v) => {
-        v.style.display = v.id === btn.dataset.view ? "block" : "none";
-      });
+  function switchPracticeSubtab(viewId) {
+    localStorage.setItem("madani_practice_subtab", viewId);
+    document.querySelectorAll(".practice-view-btn").forEach((b) => {
+      const active = b.dataset.view === viewId;
+      b.classList.toggle("btn-primary", active);
+      b.classList.toggle("active", active);
     });
+    document.querySelectorAll(".practice-subview").forEach((v) => {
+      v.style.display = v.id === viewId ? "block" : "none";
+    });
+    if (viewId === "trace-view") drawTraceWatermark();
+  }
+
+  document.querySelectorAll(".practice-view-btn").forEach((btn) => {
+    btn.addEventListener("click", () => switchPracticeSubtab(btn.dataset.view));
   });
 
   function renderConfusingPairs() {
@@ -1076,11 +1126,187 @@
   const traceCtx = traceCanvas.getContext("2d");
   let isDrawing = false;
 
+  let showTraceGuide = true;
+
+  function syncTraceCanvasSizes() {
+    const box = traceCanvas.parentElement;
+    const w = box.clientWidth || 332;
+    const h = box.clientHeight || 240;
+    if (traceCanvas.width !== w || traceCanvas.height !== h) {
+      traceCanvas.width = w;
+      traceCanvas.height = h;
+      traceDemoCanvas.width = w;
+      traceDemoCanvas.height = h;
+    }
+    return { w, h };
+  }
+
+  function sampleSvgPath(pathStr, w, h) {
+    const tokens = pathStr.match(/[A-Za-z]|-?\d*\.?\d+/g) || [];
+    const pts = [];
+    let i = 0;
+    let cx = 0;
+    let cy = 0;
+
+    const pushSeg = (fn, steps = 28) => {
+      for (let s = 0; s <= steps; s++) {
+        const t = s / steps;
+        const p = fn(t);
+        if (pts.length === 0 || Math.hypot(p[0] - pts[pts.length - 1][0], p[1] - pts[pts.length - 1][1]) > 0.5) {
+          pts.push(p);
+        }
+      }
+    };
+
+    while (i < tokens.length) {
+      const cmd = tokens[i++];
+      if (cmd === "M") {
+        cx = Number(tokens[i++]) * w;
+        cy = Number(tokens[i++]) * h;
+        pts.push([cx, cy]);
+      } else if (cmd === "L") {
+        const x2 = Number(tokens[i++]) * w;
+        const y2 = Number(tokens[i++]) * h;
+        const x1 = cx;
+        const y1 = cy;
+        pushSeg((t) => [x1 + (x2 - x1) * t, y1 + (y2 - y1) * t], 18);
+        cx = x2;
+        cy = y2;
+      } else if (cmd === "Q") {
+        const qx = Number(tokens[i++]) * w;
+        const qy = Number(tokens[i++]) * h;
+        const x2 = Number(tokens[i++]) * w;
+        const y2 = Number(tokens[i++]) * h;
+        const x1 = cx;
+        const y1 = cy;
+        pushSeg((t) => {
+          const mt = 1 - t;
+          return [
+            mt * mt * x1 + 2 * mt * t * qx + t * t * x2,
+            mt * mt * y1 + 2 * mt * t * qy + t * t * y2,
+          ];
+        }, 28);
+        cx = x2;
+        cy = y2;
+      } else if (cmd === "C") {
+        const c1x = Number(tokens[i++]) * w;
+        const c1y = Number(tokens[i++]) * h;
+        const c2x = Number(tokens[i++]) * w;
+        const c2y = Number(tokens[i++]) * h;
+        const x2 = Number(tokens[i++]) * w;
+        const y2 = Number(tokens[i++]) * h;
+        const x1 = cx;
+        const y1 = cy;
+        pushSeg((t) => {
+          const mt = 1 - t;
+          return [
+            mt * mt * mt * x1 + 3 * mt * mt * t * c1x + 3 * mt * t * t * c2x + t * t * t * x2,
+            mt * mt * mt * y1 + 3 * mt * mt * t * c1y + 3 * mt * t * t * c2y + t * t * t * y2,
+          ];
+        }, 36);
+        cx = x2;
+        cy = y2;
+      }
+    }
+    return pts;
+  }
+
+  function drawTraceWatermark() {
+    const { w, h } = syncTraceCanvasSizes();
+    traceDemoCtx.clearRect(0, 0, w, h);
+
+    // Ruled Notebook Baseline at y = 0.60 * h
+    const baseY = Math.round(h * 0.60);
+    traceDemoCtx.save();
+    traceDemoCtx.strokeStyle = settings.darkTheme ? "rgba(74, 222, 151, 0.22)" : "rgba(2, 132, 199, 0.22)";
+    traceDemoCtx.lineWidth = 1.5;
+    traceDemoCtx.setLineDash([6, 5]);
+    traceDemoCtx.beginPath();
+    traceDemoCtx.moveTo(14, baseY);
+    traceDemoCtx.lineTo(w - 14, baseY);
+    traceDemoCtx.stroke();
+    traceDemoCtx.restore();
+
+    if (!showTraceGuide) return;
+    const l = LETTERS[traceIndex];
+    const strokeData = window.ARABIC_STROKES && window.ARABIC_STROKES[l.id];
+    if (!strokeData) return;
+
+    // Draw smooth Bezier watermark
+    traceDemoCtx.save();
+    traceDemoCtx.lineWidth = 11;
+    traceDemoCtx.lineCap = "round";
+    traceDemoCtx.lineJoin = "round";
+    traceDemoCtx.strokeStyle = settings.darkTheme ? "rgba(62, 207, 142, 0.20)" : "rgba(15, 81, 50, 0.14)";
+
+    strokeData.strokes.forEach((s) => {
+      const pts = sampleSvgPath(s, w, h);
+      if (pts.length < 2) return;
+      traceDemoCtx.beginPath();
+      traceDemoCtx.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i < pts.length; i++) traceDemoCtx.lineTo(pts[i][0], pts[i][1]);
+      traceDemoCtx.stroke();
+    });
+
+    // Watermark dots
+    traceDemoCtx.fillStyle = settings.darkTheme ? "rgba(62, 207, 142, 0.22)" : "rgba(15, 81, 50, 0.16)";
+    strokeData.dots.forEach(([dx, dy]) => {
+      traceDemoCtx.beginPath();
+      traceDemoCtx.arc(dx * w, dy * h, 7, 0, Math.PI * 2);
+      traceDemoCtx.fill();
+    });
+
+    // Green Start Dot on first stroke
+    const firstPts = sampleSvgPath(strokeData.strokes[0], w, h);
+    if (firstPts.length > 0) {
+      traceDemoCtx.fillStyle = "#16a34a";
+      traceDemoCtx.beginPath();
+      traceDemoCtx.arc(firstPts[0][0], firstPts[0][1], 5.5, 0, Math.PI * 2);
+      traceDemoCtx.fill();
+    }
+    traceDemoCtx.restore();
+  }
+
   function updateTraceLetter(play = false) {
+    stopTraceAnimation();
+    localStorage.setItem("madani_trace_index", String(traceIndex));
     const l = LETTERS[traceIndex];
     document.getElementById("traceGuide").textContent = l.char;
     document.getElementById("traceLetterLabel").textContent = `${l.bnName} (${l.char})`;
+    document.querySelectorAll("#tracePickerGrid .letter-card").forEach((c, i) => {
+      c.classList.toggle("selected", i === traceIndex);
+    });
+
+    const strokeData = window.ARABIC_STROKES && window.ARABIC_STROKES[l.id];
+    const baseTag = document.getElementById("traceBaselineTag");
+    const tipBox = document.getElementById("traceTipBox");
+    const famBox = document.getElementById("traceFamilyPills");
+
+    if (strokeData) {
+      baseTag.textContent = strokeData.baseline === "below" ? "📏 লেজ লাইনের নিচে নামে" : "📏 লাইনের উপরে বসে";
+      tipBox.textContent = `💡 লেখার নিয়ম: ${strokeData.tip}`;
+      famBox.innerHTML = strokeData.family
+        .map((fid) => {
+          const fl = LETTER_BY_ID[fid];
+          const isCur = fid === l.id;
+          return `<button type="button" class="btn ${isCur ? "btn-primary" : ""}" data-fid="${fid}" style="padding:2px 9px; font-size:1.1rem; font-family:var(--font-ar);">${fl.char}</button>`;
+        })
+        .join("");
+      famBox.querySelectorAll("button").forEach((b) => {
+        b.addEventListener("click", () => {
+          const idx = LETTERS.findIndex((x) => x.id === b.dataset.fid);
+          if (idx >= 0) {
+            traceIndex = idx;
+            updateTraceLetter(true);
+          }
+        });
+      });
+    }
+
     clearTraceCanvas();
+    drawTraceWatermark();
+    const evalBox = document.getElementById("traceEvalFeedback");
+    if (evalBox) evalBox.style.display = "none";
     if (play) playLetter(l);
   }
 
@@ -1128,6 +1354,51 @@
   traceCanvas.addEventListener("touchmove", moveDraw, { passive: false });
   traceCanvas.addEventListener("touchend", endDraw);
 
+  // Tracing Letter Grid Picker Popup
+  const tracePickerModal = document.getElementById("tracePickerModal");
+  const tracePickerBackdrop = document.getElementById("tracePickerBackdrop");
+  const tracePickerGrid = document.getElementById("tracePickerGrid");
+
+  function renderTracePickerGrid() {
+    tracePickerGrid.innerHTML = "";
+    LETTERS.forEach((l, idx) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "letter-card";
+      if (idx === traceIndex) btn.classList.add("selected");
+      btn.style.padding = "7px 4px";
+      btn.innerHTML = `
+        <div class="card-ar ar" style="font-size:1.75rem; margin:2px 0;">${l.char}</div>
+        <div class="card-bn" style="font-size:0.75rem;">${l.bnName}</div>
+      `;
+      btn.addEventListener("click", () => {
+        traceIndex = idx;
+        closeTracePicker();
+        updateTraceLetter(true);
+      });
+      tracePickerGrid.appendChild(btn);
+    });
+  }
+
+  function openTracePicker() {
+    renderTracePickerGrid();
+    tracePickerBackdrop.classList.add("open");
+    tracePickerModal.classList.add("open");
+  }
+
+  function closeTracePicker() {
+    tracePickerBackdrop.classList.remove("open");
+    tracePickerModal.classList.remove("open");
+  }
+
+  document.getElementById("tracePickerOpenBtn").addEventListener("click", openTracePicker);
+  document.getElementById("tracePickerCloseBtn").addEventListener("click", closeTracePicker);
+  tracePickerBackdrop.addEventListener("click", closeTracePicker);
+
+  document.getElementById("traceStartBtn").addEventListener("click", () => {
+    traceIndex = 0;
+    updateTraceLetter(true);
+  });
   document.getElementById("tracePrevBtn").addEventListener("click", () => {
     traceIndex = (traceIndex - 1 + LETTERS.length) % LETTERS.length;
     updateTraceLetter(true);
@@ -1137,10 +1408,394 @@
     updateTraceLetter(true);
   });
   document.getElementById("tracePlayBtn").addEventListener("click", () => playLetter(LETTERS[traceIndex]));
-  document.getElementById("traceClearBtn").addEventListener("click", clearTraceCanvas);
-  document.getElementById("traceGuideToggleBtn").addEventListener("click", () => {
-    document.getElementById("traceGuide").classList.toggle("hidden");
+  document.getElementById("traceClearBtn").addEventListener("click", () => {
+    clearTraceCanvas();
+    drawTraceWatermark();
+    const evalBox = document.getElementById("traceEvalFeedback");
+    if (evalBox) evalBox.style.display = "none";
   });
+
+  function playAudioSequence(files) {
+    if (!files || !files.length) return;
+    let idx = 0;
+    const next = () => {
+      if (idx >= files.length) return;
+      const src = files[idx++];
+      playAudioFile(src, next);
+    };
+    next();
+  }
+
+  function evaluateHandwriting() {
+    const l = LETTERS[traceIndex];
+    const strokeData = window.ARABIC_STROKES && window.ARABIC_STROKES[l.id];
+    const evalBox = document.getElementById("traceEvalFeedback");
+    const w = traceCanvas.width;
+    const h = traceCanvas.height;
+    const userImg = traceCtx.getImageData(0, 0, w, h).data;
+
+    let userCount = 0;
+    for (let i = 3; i < userImg.length; i += 4) {
+      if (userImg[i] > 20) userCount += 1;
+    }
+
+    if (userCount < 35) {
+      const msg = "আপনি এখনো ক্যানভাসে কিছু লেখেননি। হালকা চিহ্নের উপর লিখে তারপর যাচাই করুন।";
+      evalBox.style.display = "block";
+      evalBox.innerHTML = `<strong>🗣️ মূল্যায়ন:</strong><div>${msg}</div>`;
+      playAudioSequence(["audio/bn_empty.mp3"]);
+      return;
+    }
+
+    if (!strokeData) return;
+
+    // 1. Check path point coverage directly along the Bezier curve (fair & accurate)
+    const allStrokePts = [];
+    strokeData.strokes.forEach((s) => {
+      allStrokePts.push(...sampleSvgPath(s, w, h));
+    });
+
+    const hitRadius = 26;
+    let totalSamples = 0;
+    let hitSamples = 0;
+    let missLeft = 0;
+    let missRight = 0;
+
+    for (let i = 0; i < allStrokePts.length; i += 3) {
+      const [px, py] = allStrokePts[i];
+      const cx = Math.round(px);
+      const cy = Math.round(py);
+      totalSamples += 1;
+      let hit = false;
+      for (let yy = Math.max(0, cy - hitRadius); yy <= Math.min(h - 1, cy + hitRadius) && !hit; yy += 2) {
+        for (let xx = Math.max(0, cx - hitRadius); xx <= Math.min(w - 1, cx + hitRadius); xx += 2) {
+          if (userImg[(yy * w + xx) * 4 + 3] > 20) {
+            hit = true;
+            break;
+          }
+        }
+      }
+      if (hit) hitSamples += 1;
+      else if (px < w * 0.5) missLeft += 1;
+      else missRight += 1;
+    }
+
+    // 2. Check precision & detect extra/stray ink clusters (e.g. extra dot like ث instead of ت)
+    const expCanvas = document.createElement("canvas");
+    expCanvas.width = w;
+    expCanvas.height = h;
+    const expCtx = expCanvas.getContext("2d");
+    expCtx.lineWidth = 32;
+    expCtx.lineCap = "round";
+    expCtx.lineJoin = "round";
+    expCtx.strokeStyle = "#000";
+
+    strokeData.strokes.forEach((s) => {
+      const pts = sampleSvgPath(s, w, h);
+      if (pts.length < 2) return;
+      expCtx.beginPath();
+      expCtx.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i < pts.length; i++) expCtx.lineTo(pts[i][0], pts[i][1]);
+      expCtx.stroke();
+    });
+    strokeData.dots.forEach(([dx, dy]) => {
+      expCtx.beginPath();
+      expCtx.arc(dx * w, dy * h, 20, 0, Math.PI * 2);
+      expCtx.fill();
+    });
+
+    const expImg = expCtx.getImageData(0, 0, w, h).data;
+    let insideUser = 0;
+    let outTop = 0;
+    let outBottom = 0;
+    const outMask = new Uint8Array(w * h);
+
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const pxIdx = y * w + x;
+        const aIdx = pxIdx * 4 + 3;
+        if (userImg[aIdx] > 20) {
+          if (expImg[aIdx] > 20) insideUser += 1;
+          else {
+            outMask[pxIdx] = 1;
+            if (y < h * 0.60) outTop += 1;
+            else outBottom += 1;
+          }
+        }
+      }
+    }
+
+    // Count distinct outside ink clusters (size >= 25px catches an extra dot!)
+    let extraClusters = 0;
+    const visitedOut = new Uint8Array(w * h);
+    const outQ = new Int32Array(w * h);
+    for (let i = 0; i < w * h; i++) {
+      if (!outMask[i] || visitedOut[i]) continue;
+      let qh = 0;
+      let qt = 0;
+      outQ[qt++] = i;
+      visitedOut[i] = 1;
+      while (qh < qt) {
+        const idx = outQ[qh++];
+        const x = idx % w;
+        const y = (idx / w) | 0;
+        for (let dy = -1; dy <= 1; dy++) {
+          const ny = y + dy;
+          if (ny < 0 || ny >= h) continue;
+          for (let dx = -1; dx <= 1; dx++) {
+            const nx = x + dx;
+            if (nx < 0 || nx >= w) continue;
+            const nIdx = ny * w + nx;
+            if (outMask[nIdx] && !visitedOut[nIdx]) {
+              visitedOut[nIdx] = 1;
+              outQ[qt++] = nIdx;
+            }
+          }
+        }
+      }
+      if (qt >= 25) extraClusters += 1;
+    }
+
+    const coverage = totalSamples > 0 ? hitSamples / totalSamples : 0;
+    const precision = userCount > 0 ? insideUser / userCount : 0;
+
+    // 3. Check dots specifically
+    let missingDots = 0;
+    strokeData.dots.forEach(([dx, dy]) => {
+      const cx = Math.round(dx * w);
+      const cy = Math.round(dy * h);
+      let foundDot = false;
+      for (let yy = Math.max(0, cy - 24); yy <= Math.min(h - 1, cy + 24) && !foundDot; yy += 2) {
+        for (let xx = Math.max(0, cx - 24); xx <= Math.min(w - 1, cx + 24); xx += 2) {
+          if (userImg[(yy * w + xx) * 4 + 3] > 20) {
+            foundDot = true;
+            break;
+          }
+        }
+      }
+      if (!foundDot) missingDots += 1;
+    });
+
+    const dotScore = strokeData.dots.length > 0 ? (strokeData.dots.length - missingDots) / strokeData.dots.length : 1;
+    let score = Math.round((coverage * 0.5 + precision * 0.3 + dotScore * 0.2) * 100);
+    if (extraClusters > 0) {
+      score = Math.max(15, Math.min(72, score - extraClusters * 20));
+    }
+
+    const issues = [];
+    const voiceClips = [];
+
+    if (score >= 82 && missingDots === 0 && extraClusters === 0) {
+      voiceClips.push("audio/bn_excellent.mp3");
+    } else if (score >= 58) {
+      voiceClips.push("audio/bn_good.mp3");
+    } else {
+      voiceClips.push("audio/bn_practice.mp3");
+    }
+
+    if (missingDots > 0) {
+      issues.push(`${toBnNum(missingDots)}টি নুকতা সঠিক জায়গায় বসানো হয়নি।`);
+      voiceClips.push("audio/bn_dot_missing.mp3");
+    }
+    if (extraClusters > 0) {
+      issues.push("অতিরিক্ত নুকতা বা মূল আকৃতির বাইরে দাগ পড়েছে।");
+      voiceClips.push("audio/bn_out_bounds.mp3");
+    }
+    if (coverage < 0.72) {
+      if (missRight > missLeft * 1.3) {
+        issues.push("ডান দিকের শুরুর অংশ পুরোপুরি টানা হয়নি।");
+        voiceClips.push("audio/bn_miss_right.mp3");
+      } else if (missLeft > missRight * 1.3) {
+        issues.push("বাম দিকের শেষ অংশ পুরোপুরি টানা হয়নি।");
+        voiceClips.push("audio/bn_miss_left.mp3");
+      } else {
+        issues.push("হরফটির মূল আকৃতি সম্পূর্ণভাবে টানা হয়নি।");
+        voiceClips.push("audio/bn_miss_shape.mp3");
+      }
+    }
+    if (precision < 0.62 && extraClusters === 0) {
+      if (outBottom > outTop * 1.3) {
+        issues.push("রেখা বেসলাইনের নিচে বেশি সরে গেছে।");
+        voiceClips.push("audio/bn_out_baseline.mp3");
+      } else {
+        issues.push("কিছু দাগ মূল আকৃতির বাইরে চলে গেছে।");
+        voiceClips.push("audio/bn_out_bounds.mp3");
+      }
+    }
+
+    if (issues.length > 0 || score < 82) {
+      voiceClips.push(`audio/bn_tip_${l.id}.mp3`);
+    }
+
+    let summary = "";
+    if (score >= 82 && issues.length === 0) {
+      summary = `মাশাআল্লাহ! ${l.bnName} হরফটি চমৎকার লিখেছেন (${toBnNum(score)}%)।`;
+    } else if (score >= 58) {
+      summary = `ভালো চেষ্টা! নম্বর: ${toBnNum(score)}%। ${issues.join(" ")} সঠিক নিয়ম: ${strokeData.tip}`;
+    } else {
+      summary = `আরও একটু অনুশীলন প্রয়োজন (${toBnNum(score)}%)। ভুল: ${issues.join(" ")} সমাধান: ${strokeData.tip}`;
+    }
+
+    evalBox.style.display = "block";
+    evalBox.innerHTML = `
+      <strong>🗣️ লেখা মূল্যায়ন (${toBnNum(score)}%):</strong>
+      <div style="margin-top:4px;">${summary}</div>
+    `;
+    playAudioSequence(voiceClips);
+  }
+
+  document.getElementById("traceEvalBtn").addEventListener("click", evaluateHandwriting);
+
+  // Animated Slow Handwriting Stroke Guide
+  const traceDemoCanvas = document.getElementById("traceDemoCanvas");
+  const traceDemoCtx = traceDemoCanvas.getContext("2d");
+  const traceSpeedBtn = document.getElementById("traceSpeedBtn");
+
+  traceSpeedBtn.addEventListener("click", () => {
+    traceDemoSpeed = traceDemoSpeed === 0.5 ? 1.0 : 0.5;
+    traceSpeedBtn.textContent = traceDemoSpeed === 0.5 ? "গতি: ০.৫x" : "গতি: ১.০x";
+  });
+
+  function stopTraceAnimation() {
+    if (traceDemoRaf) cancelAnimationFrame(traceDemoRaf);
+    traceDemoRaf = null;
+  }
+
+  function animateLetterStroke() {
+    stopTraceAnimation();
+    const l = LETTERS[traceIndex];
+    const { w, h } = syncTraceCanvasSizes();
+    const strokeData = window.ARABIC_STROKES && window.ARABIC_STROKES[l.id];
+    if (!strokeData) return;
+
+    const sampledStrokes = strokeData.strokes.map((s) => sampleSvgPath(s, w, h));
+    const segments = [];
+    sampledStrokes.forEach((pts) => {
+      for (let i = 0; i < pts.length - 1; i++) {
+        const len = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]);
+        segments.push({ x1: pts[i][0], y1: pts[i][1], x2: pts[i + 1][0], y2: pts[i + 1][1], len, startNew: i === 0 });
+      }
+    });
+
+    const totalLen = segments.reduce((acc, s) => acc + s.len, 0) || 1;
+    const dotStepLen = 45; // pause/reveal length per dot after main strokes
+    const grandTotal = totalLen + strokeData.dots.length * dotStepLen;
+    const speedPxPerSec = traceDemoSpeed === 0.5 ? 110 : 230;
+    let progress = 2;
+    let lastTs = null;
+
+    const step = (ts) => {
+      if (!lastTs) lastTs = ts;
+      const dt = Math.min((ts - lastTs) / 1000, 0.05);
+      lastTs = ts;
+      progress = Math.min(grandTotal, progress + dt * speedPxPerSec);
+
+      drawTraceWatermark();
+      traceDemoCtx.save();
+      traceDemoCtx.lineWidth = 10;
+      traceDemoCtx.lineCap = "round";
+      traceDemoCtx.lineJoin = "round";
+      traceDemoCtx.strokeStyle = "#d97706";
+
+      let remaining = Math.min(progress, totalLen);
+      let penX = null;
+      let penY = null;
+
+      traceDemoCtx.beginPath();
+      for (const seg of segments) {
+        if (remaining <= 0) break;
+        if (seg.startNew) traceDemoCtx.moveTo(seg.x1, seg.y1);
+        if (remaining >= seg.len) {
+          traceDemoCtx.lineTo(seg.x2, seg.y2);
+          penX = seg.x2;
+          penY = seg.y2;
+          remaining -= seg.len;
+        } else {
+          const r = remaining / seg.len;
+          penX = seg.x1 + (seg.x2 - seg.x1) * r;
+          penY = seg.y1 + (seg.y2 - seg.y1) * r;
+          traceDemoCtx.lineTo(penX, penY);
+          remaining = 0;
+        }
+      }
+      traceDemoCtx.stroke();
+
+      // Reveal dots one by one after main strokes finish
+      if (progress > totalLen) {
+        const dotProgress = progress - totalLen;
+        strokeData.dots.forEach(([dx, dy], idx) => {
+          const threshold = idx * dotStepLen + 10;
+          if (dotProgress >= threshold) {
+            traceDemoCtx.fillStyle = "#d97706";
+            traceDemoCtx.beginPath();
+            traceDemoCtx.arc(dx * w, dy * h, 7, 0, Math.PI * 2);
+            traceDemoCtx.fill();
+            penX = dx * w;
+            penY = dy * h;
+          }
+        });
+      }
+
+      if (progress < grandTotal && penX !== null) {
+        traceDemoCtx.fillStyle = "#0f5132";
+        traceDemoCtx.strokeStyle = "#fde68a";
+        traceDemoCtx.lineWidth = 3;
+        traceDemoCtx.beginPath();
+        traceDemoCtx.arc(penX, penY, 7, 0, Math.PI * 2);
+        traceDemoCtx.fill();
+        traceDemoCtx.stroke();
+        traceDemoCtx.restore();
+        traceDemoRaf = requestAnimationFrame(step);
+      } else {
+        traceDemoCtx.restore();
+      }
+    };
+
+    traceDemoRaf = requestAnimationFrame(step);
+  }
+
+  document.getElementById("traceAnimateBtn").addEventListener("click", () => {
+    playLetter(LETTERS[traceIndex]);
+    animateLetterStroke();
+  });
+
+  // Mastery Heatmap & Completion Badge
+  function renderHeatmap() {
+    const grid = document.getElementById("heatmapGrid");
+    const badgeBox = document.getElementById("completionBadgeBox");
+    if (!grid) return;
+    grid.innerHTML = "";
+
+    let masteredCount = 0;
+    const pool = LETTERS.filter((l) => l.id !== "yaa_maqsura");
+    pool.forEach((l) => {
+      const m = masteryMap[l.id] || { ok: 0, total: 0 };
+      const pct = m.total > 0 ? Math.round((m.ok / m.total) * 100) : null;
+      let cls = "";
+      if (pct !== null) {
+        if (pct >= 80) {
+          cls = "heat-high";
+          masteredCount += 1;
+        } else if (pct >= 50) cls = "heat-mid";
+        else cls = "heat-low";
+      }
+
+      const cell = document.createElement("button");
+      cell.type = "button";
+      cell.className = `heat-cell ${cls}`;
+      cell.innerHTML = `<span class="ar">${l.char}</span><span class="pct">${pct !== null ? toBnNum(pct) + "%" : "—"}</span>`;
+      cell.addEventListener("click", () => playLetter(l));
+      grid.appendChild(cell);
+    });
+
+    const pctAll = Math.round((learnedSet.size / LETTERS.length) * 100);
+    badgeBox.innerHTML =
+      masteredCount >= 20 || learnedSet.size >= 29
+        ? `<div style="font-size:2rem;">🏅</div><strong>মাশাআল্লাহ! আপনি ${toBnNum(learnedSet.size)}টি হরফ অনুশীলন ও ${toBnNum(masteredCount)}টি হরফে ৮০%+ দক্ষতা অর্জন করেছেন!</strong>`
+        : `<div>অগ্রগতি: <strong>${toBnNum(pctAll)}%</strong> (${toBnNum(masteredCount)}/${toBnNum(pool.length)} হরফে ৮০%+ দক্ষতা)। সব হরফ আয়ত্ত করলে সাফল্যের ব্যাজ আনলক হবে!</div>`;
+  }
+
+  document.getElementById("badgeModalBtn").addEventListener("click", renderHeatmap);
 
   // Smart Quiz
   function shuffle(arr) {
@@ -1158,10 +1813,51 @@
     document.getElementById("quizStreak").textContent = `🔥 ধারাবাহিক: ${toBnNum(quizStreak)}`;
   }
 
+  // Timed 60s Challenge Controls
+  const timedHud = document.getElementById("timedHud");
+  const timedClockEl = document.getElementById("timedClock");
+  const timedBestEl = document.getElementById("timedBest");
+  const timedStartBtn = document.getElementById("timedStartBtn");
+  timedBestEl.textContent = toBnNum(timedBest);
+
+  function stopTimedChallenge() {
+    timedRunning = false;
+    clearInterval(timedTimerId);
+    timedTimerId = null;
+    timedStartBtn.textContent = "আবার শুরু";
+  }
+
+  timedStartBtn.addEventListener("click", () => {
+    stopTimedChallenge();
+    timedRunning = true;
+    timedLeft = 60;
+    timedScore = 0;
+    timedClockEl.textContent = toBnNum(timedLeft);
+    timedStartBtn.textContent = "চলছে...";
+    generateQuizQuestion(true);
+    timedTimerId = setInterval(() => {
+      timedLeft -= 1;
+      timedClockEl.textContent = toBnNum(Math.max(0, timedLeft));
+      if (timedLeft <= 0) {
+        stopTimedChallenge();
+        if (timedScore > timedBest) {
+          timedBest = timedScore;
+          localStorage.setItem("madani_timed_best", String(timedBest));
+          timedBestEl.textContent = toBnNum(timedBest);
+        }
+        document.getElementById("quizFeedback").style.color = "var(--primary)";
+        document.getElementById("quizFeedback").textContent = `⏱️ সময় শেষ! ৬০ সেকেন্ডে আপনার স্কোর: ${toBnNum(timedScore)} (সর্বোচ্চ: ${toBnNum(timedBest)})`;
+      }
+    }, 1000);
+  });
+
   function generateQuizQuestion(shouldPlay = true) {
     quizAnswered = false;
     document.getElementById("quizFeedback").textContent = "";
     const basePool = LETTERS.filter((l) => l.id !== "yaa_maqsura");
+
+    timedHud.style.display = quizMode === "timed" ? "flex" : "none";
+    if (quizMode !== "timed" && timedRunning) stopTimedChallenge();
 
     let targetPool = basePool;
     if (quizMode === "weak") {
@@ -1173,6 +1869,17 @@
         return;
       }
       targetPool = weakLetters;
+    } else if (quizMode === "srs") {
+      // Spaced Repetition: sort by lowest accuracy / oldest lastSeen
+      const sorted = [...basePool].sort((a, b) => {
+        const ma = masteryMap[a.id] || { ok: 0, total: 0, lastSeen: 0 };
+        const mb = masteryMap[b.id] || { ok: 0, total: 0, lastSeen: 0 };
+        const accA = ma.total ? ma.ok / ma.total : 0;
+        const accB = mb.total ? mb.ok / mb.total : 0;
+        if (accA !== accB) return accA - accB;
+        return (ma.lastSeen || 0) - (mb.lastSeen || 0);
+      });
+      targetPool = sorted.slice(0, 6);
     }
 
     const target = targetPool[Math.floor(Math.random() * targetPool.length)];
@@ -1184,9 +1891,17 @@
     optionsBox.innerHTML = "";
     optionsBox.classList.toggle("list-mode", quizMode === "makhraj");
 
-    if (quizMode === "audio" || quizMode === "weak") {
+    if (quizMode === "audio" || quizMode === "weak" || quizMode === "srs" || quizMode === "timed") {
+      const label =
+        quizMode === "weak"
+          ? "দুর্বল হরফ রিভিশন — "
+          : quizMode === "srs"
+          ? "স্মার্ট রিভিশন — "
+          : quizMode === "timed"
+          ? "দ্রুত উত্তর দিন — "
+          : "";
       promptBox.innerHTML = `
-        <p style="margin:0 0 10px; font-weight:600;">${quizMode === "weak" ? "দুর্বল হরফ রিভিশন — " : ""}নিচের অডিও শুনে সঠিক হরফটি বাছাই করুন:</p>
+        <p style="margin:0 0 10px; font-weight:600;">${label}নিচের অডিও শুনে সঠিক হরফটি বাছাই করুন:</p>
         <button class="btn btn-primary" id="quizPlayAudioBtn" type="button" style="font-size:1.05rem; padding:10px 20px;">
           🔊 উচ্চারণ শুনুন
         </button>
@@ -1200,6 +1915,82 @@
         btn.className = "quiz-opt-btn";
         btn.innerHTML = `<span class="ar">${opt.char}</span>`;
         btn.addEventListener("click", () => handleQuizAnswer(btn, opt.id === target.id, target));
+        optionsBox.appendChild(btn);
+      });
+    } else if (quizMode === "harakat") {
+      const hPool = basePool.filter((l) => l.id !== "hamzah");
+      const hTarget = hPool[Math.floor(Math.random() * hPool.length)];
+      const hTypes = [
+        { key: "a", name: "যবর", mark: (l) => (l.id === "alif" ? "أَ" : `${l.char}َ`) },
+        { key: "i", name: "যের", mark: (l) => (l.id === "alif" ? "إِ" : `${l.char}ِ`) },
+        { key: "u", name: "পেশ", mark: (l) => (l.id === "alif" ? "أُ" : `${l.char}ُ`) },
+      ];
+      const chosen = hTypes[Math.floor(Math.random() * hTypes.length)];
+      const hAudio = `audio/h_${hTarget.id}_${chosen.key}.mp3`;
+
+      promptBox.innerHTML = `
+        <p style="margin:0 0 10px; font-weight:600;">উচ্চারণ শুনে সঠিক হরকতযুক্ত হরফটি বাছাই করুন:</p>
+        <button class="btn btn-primary" id="quizPlayAudioBtn" type="button" style="font-size:1.05rem; padding:10px 20px;">
+          🔊 হরকত শুনুন
+        </button>
+      `;
+      document.getElementById("quizPlayAudioBtn").addEventListener("click", () => playAudioFile(hAudio));
+      if (shouldPlay) playAudioFile(hAudio);
+
+      const hOptions = shuffle(
+        hTypes.map((ht) => ({ label: ht.mark(hTarget), name: `${hTarget.bnName} (${ht.name})`, isRight: ht.key === chosen.key }))
+      );
+      hOptions.forEach((opt) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "quiz-opt-btn";
+        btn.innerHTML = `<span class="ar">${opt.label}</span><span style="font-size:0.82rem;">${opt.name}</span>`;
+        btn.addEventListener("click", () => handleQuizAnswer(btn, opt.isRight, hTarget));
+        optionsBox.appendChild(btn);
+      });
+    } else if (quizMode === "word") {
+      const w = DATA.wordBreakdowns[Math.floor(Math.random() * DATA.wordBreakdowns.length)];
+      const midPart = w.parts[1];
+      const midLetter = LETTER_BY_ID[midPart.letterId];
+      const wDistractors = shuffle(basePool.filter((l) => l.id !== midLetter.id)).slice(0, 3);
+      const wOptions = shuffle([midLetter, ...wDistractors]);
+
+      promptBox.innerHTML = `
+        <p style="margin:0 0 6px; font-weight:600;">এই শব্দটির <strong>মাঝের হরফ</strong> কোনটি?</p>
+        <div class="ar" style="font-size:3.2rem; color:var(--primary); line-height:1.3;">${w.word}</div>
+        <button class="btn" id="quizPlayAudioBtn" type="button" style="margin-top:6px; padding:4px 12px; font-size:0.82rem;">🔊 শব্দ শুনুন</button>
+      `;
+      document.getElementById("quizPlayAudioBtn").addEventListener("click", () => playAudioFile(w.audio));
+      if (shouldPlay) playAudioFile(w.audio);
+
+      wOptions.forEach((opt) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "quiz-opt-btn";
+        btn.innerHTML = `<span class="ar">${opt.char}</span><span>${opt.bnName}</span>`;
+        btn.addEventListener("click", () => handleQuizAnswer(btn, opt.id === midLetter.id, midLetter));
+        optionsBox.appendChild(btn);
+      });
+    } else if (quizMode === "pairs") {
+      const pair = DATA.confusingPairs[Math.floor(Math.random() * DATA.confusingPairs.length)];
+      const pLetters = pair.ids.map((id) => LETTER_BY_ID[id]);
+      const pTarget = pLetters[Math.floor(Math.random() * pLetters.length)];
+
+      promptBox.innerHTML = `
+        <p style="margin:0 0 8px; font-weight:600;">কঠিন জোড়া (${pair.title}) — সঠিক হরফটি চিনুন:</p>
+        <button class="btn btn-primary" id="quizPlayAudioBtn" type="button" style="font-size:1.05rem; padding:10px 20px;">
+          🔊 উচ্চারণ শুনুন
+        </button>
+      `;
+      document.getElementById("quizPlayAudioBtn").addEventListener("click", () => playAudioFile(pTarget.audio));
+      if (shouldPlay) playAudioFile(pTarget.audio);
+
+      shuffle(pLetters).forEach((opt) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "quiz-opt-btn";
+        btn.innerHTML = `<span class="ar">${opt.char}</span><span>${opt.bnName}</span>`;
+        btn.addEventListener("click", () => handleQuizAnswer(btn, opt.id === pTarget.id, pTarget));
         optionsBox.appendChild(btn);
       });
     } else if (quizMode === "murakkab") {
@@ -1251,16 +2042,30 @@
     const feedback = document.getElementById("quizFeedback");
     document.querySelectorAll(".quiz-opt-btn").forEach((b) => (b.disabled = true));
 
+    // Update per-letter Mastery Heatmap & SRS stats
+    const prevM = masteryMap[target.id] || { ok: 0, total: 0, lastSeen: 0 };
+    masteryMap[target.id] = {
+      ok: prevM.ok + (isCorrect ? 1 : 0),
+      total: prevM.total + 1,
+      lastSeen: Date.now(),
+    };
+    localStorage.setItem("madani_mastery", JSON.stringify(masteryMap));
+    renderHeatmap();
+
     if (isCorrect) {
       quizScore += 1;
       quizStreak += 1;
+      if (timedRunning) timedScore += 1;
       clickedBtn.classList.add("correct");
       feedback.style.color = "var(--primary)";
       feedback.textContent = `মাশাআল্লাহ! সঠিক উত্তর — ${target.bnName} (${target.char})`;
       playFeedbackTone(true);
       triggerHaptic(20);
-      if (quizMode === "weak" && weakSet.has(target.id)) {
+      if ((quizMode === "weak" || quizMode === "srs") && weakSet.has(target.id)) {
         weakSet.delete(target.id);
+      }
+      if (timedRunning && timedLeft > 0) {
+        setTimeout(() => { if (timedRunning) generateQuizQuestion(true); }, 550);
       }
     } else {
       quizStreak = 0;
@@ -1272,6 +2077,9 @@
       playFeedbackTone(false);
       triggerHaptic([35, 30, 35]);
       weakSet.add(target.id);
+      if (timedRunning && timedLeft > 0) {
+        setTimeout(() => { if (timedRunning) generateQuizQuestion(true); }, 950);
+      }
     }
 
     localStorage.setItem("madani_weak", JSON.stringify([...weakSet]));
@@ -1369,6 +2177,143 @@
     installAppBtn.style.display = "none";
   });
 
+  // Interactive Spotlight Coachmark App Tour
+  const TOUR_STEPS = [
+    {
+      selector: "#alphabetGrid .letter-card",
+      tab: "alphabet",
+      title: "১নং সবক: ২৯টি আরবি হরফ",
+      desc: "যেকোনো হরফে ক্লিক করলে মাদানী কায়দা অনুযায়ী উচ্চারণ, ৪টি রূপ ও নিজ কণ্ঠ রেকর্ড করার অপশন পাবেন।",
+    },
+    {
+      selector: "#autoPlayBtn",
+      tab: "alphabet",
+      title: "ধারাবাহিক ও লুপ প্লে",
+      desc: "এখানে ক্লিক করে সবগুলো হরফ একটানা শুনুন, অথবা পাশে থাকা 'লুপ' বাটনে হ্যান্ডস-ফ্রি রিভিশন দিন।",
+    },
+    {
+      selector: '[data-tab="murakkab"]',
+      tab: "alphabet",
+      title: "২নং সবক: মুরাক্কাব (শব্দের রূপ)",
+      desc: "বাক্যের শুরু, মাঝ ও শেষে হরফ কীভাবে মিলে লেখা হয়, শব্দ ভেঙে পড়া ও বইয়ের ২৮ ঘরের পরীক্ষা এখানে আছে।",
+    },
+    {
+      selector: '[data-tab="harakat"]',
+      tab: "alphabet",
+      title: "হরকত, তানবীন, মাদ ও ছোট সূরা",
+      desc: "যবর-যের-পেশ, তানবীন, কলকলাহ ও সূরা আল-ফাতিহা/ইখলাস/আসরের প্রতিটি শব্দ আলাদাভাবে শুনে শিখুন।",
+    },
+    {
+      selector: '[data-tab="makhraj"]',
+      tab: "alphabet",
+      title: "১৭টি মাখরাজ ও বাগযন্ত্রের চিত্র",
+      desc: "কোন হরফ গলা, জিহ্বা বা ঠোঁটের কোন জায়গা থেকে উচ্চারিত হয় তা সচিত্র দেখে অনুশীলন করুন।",
+    },
+    {
+      selector: '[data-tab="quiz"]',
+      tab: "alphabet",
+      title: "অনুশীলন, হাতে লেখা ও রিপোর্ট",
+      desc: "৯ ধরনের কুইজ (৬০সে স্পিড চ্যালেঞ্জ, স্মার্ট রিভিশন), অ্যানিমেটেড হাতে লেখা গাইড ও Mastery Heatmap এখানে।",
+    },
+    {
+      selector: "#settingsBtn",
+      tab: "alphabet",
+      title: "⚙️ অ্যাপ সেটিংস ও কন্ট্রোল",
+      desc: "ডার্ক মোড, ফোকাস মোড, বাংলা নাম লুকানো, আরবি ফন্ট সাইজ এবং অগ্রগতি ব্যাকআপ এখান থেকে নিয়ন্ত্রণ করুন।",
+    },
+  ];
+
+  let tourStep = 0;
+  const tourModal = document.getElementById("tourModal");
+  const tourSpotlight = document.getElementById("tourSpotlight");
+  const tourTitle = document.getElementById("tourTitle");
+  const tourBody = document.getElementById("tourBody");
+  const tourStepBadge = document.getElementById("tourStepBadge");
+  const tourDots = document.getElementById("tourDots");
+  const tourPrevBtn = document.getElementById("tourPrevBtn");
+  const tourNextBtn = document.getElementById("tourNextBtn");
+
+  function findVisibleTarget(selector) {
+    const els = document.querySelectorAll(selector);
+    for (const el of els) {
+      const r = el.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0) return el;
+    }
+    return null;
+  }
+
+  function positionTourStep() {
+    const s = TOUR_STEPS[tourStep];
+    if (s.tab) switchTab(s.tab);
+
+    tourTitle.textContent = s.title;
+    tourBody.textContent = s.desc;
+    tourStepBadge.textContent = `${toBnNum(tourStep + 1)} / ${toBnNum(TOUR_STEPS.length)}`;
+    tourDots.innerHTML = TOUR_STEPS.map((_, i) => `<span class="tour-dot ${i === tourStep ? "active" : ""}"></span>`).join("");
+    tourPrevBtn.disabled = tourStep === 0;
+    tourNextBtn.textContent = tourStep === TOUR_STEPS.length - 1 ? "✓" : ">";
+
+    const target = findVisibleTarget(s.selector);
+    if (!target) return;
+
+    const r = target.getBoundingClientRect();
+    const pad = 5;
+    tourSpotlight.style.left = `${Math.max(2, r.left - pad)}px`;
+    tourSpotlight.style.top = `${Math.max(2, r.top - pad)}px`;
+    tourSpotlight.style.width = `${r.width + pad * 2}px`;
+    tourSpotlight.style.height = `${r.height + pad * 2}px`;
+
+    // Position tooltip below or above target cleanly inside viewport
+    const tipW = Math.min(window.innerWidth * 0.92, 350);
+    const tipH = tourModal.offsetHeight || 175;
+    let top = r.bottom + 14;
+    if (top + tipH > window.innerHeight - 16) {
+      top = Math.max(12, r.top - tipH - 14);
+    }
+    let left = r.left + r.width / 2 - tipW / 2;
+    left = Math.max(12, Math.min(window.innerWidth - tipW - 12, left));
+
+    tourModal.style.top = `${top}px`;
+    tourModal.style.left = `${left}px`;
+  }
+
+  function openTour() {
+    tourStep = 0;
+    tourSpotlight.classList.add("open");
+    tourModal.classList.add("open");
+    positionTourStep();
+  }
+
+  function closeTour() {
+    tourSpotlight.classList.remove("open");
+    tourModal.classList.remove("open");
+    localStorage.setItem("madani_tour_seen", "1");
+  }
+
+  document.getElementById("tourBtn").addEventListener("click", openTour);
+  document.getElementById("openTourFromSettingsBtn").addEventListener("click", () => {
+    closeSettings();
+    openTour();
+  });
+  document.getElementById("tourCloseBtn").addEventListener("click", closeTour);
+  tourPrevBtn.addEventListener("click", () => {
+    if (tourStep > 0) {
+      tourStep -= 1;
+      positionTourStep();
+    }
+  });
+  tourNextBtn.addEventListener("click", () => {
+    if (tourStep < TOUR_STEPS.length - 1) {
+      tourStep += 1;
+      positionTourStep();
+    } else {
+      closeTour();
+    }
+  });
+  window.addEventListener("resize", () => {
+    if (tourModal.classList.contains("open")) positionTourStep();
+  });
+
   // Initial render (shouldPlay = false so page reload never auto-plays audio)
   applySettings();
   updateStreakUI(false);
@@ -1382,6 +2327,24 @@
   renderHarakatTab();
   renderMakhrajList("all");
   renderConfusingPairs();
+  renderHeatmap();
   updateTraceLetter(false);
   generateQuizQuestion(false);
+
+  // Restore last active tab & sub-tabs after reload
+  const savedHarakatSubtab = localStorage.getItem("madani_harakat_subtab");
+  if (savedHarakatSubtab) {
+    const hBtn = document.querySelector(`.harakat-subtab-btn[data-hview="${savedHarakatSubtab}"]`);
+    if (hBtn) hBtn.click();
+  }
+  const savedPracticeSubtab = localStorage.getItem("madani_practice_subtab");
+  if (savedPracticeSubtab) switchPracticeSubtab(savedPracticeSubtab);
+  const savedTab = localStorage.getItem("madani_active_tab");
+  if (savedTab && document.getElementById(`panel-${savedTab}`)) {
+    switchTab(savedTab);
+  }
+
+  if (!localStorage.getItem("madani_tour_seen")) {
+    setTimeout(openTour, 450);
+  }
 })();

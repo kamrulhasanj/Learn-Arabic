@@ -41,6 +41,9 @@
         <button class="pill-btn" id="themeBtn" type="button" title="দিন/রাত থিম">
           🌙
         </button>
+        <button class="pill-btn" id="tourBtn" type="button" title="অ্যাপ গাইড ও ট্যুর">
+          ❓
+        </button>
         <button class="pill-btn" id="settingsBtn" type="button" title="অ্যাপ সেটিংস">
           ⚙️
         </button>
@@ -88,6 +91,7 @@
           <div style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;">
             <button class="btn btn-gold" id="playDuaBtn" type="button">🔊 দোয়া শুনুন</button>
             <button class="btn btn-primary" id="autoPlayBtn" type="button">▶ সব হরফ ধারাবাহিক শুনুন</button>
+            <button class="btn" id="loopAudioBtn" type="button" title="হ্যান্ডস-ফ্রি লুপ মোড">🔁 লুপ: বন্ধ</button>
           </div>
         </div>
 
@@ -301,10 +305,11 @@
 
     <!-- TAB 5: অনুশীলন ও পরীক্ষা -->
     <section class="tab-panel" id="panel-quiz">
-      <div class="practice-subtabs">
+      <div class="practice-subtabs practice-subtabs-4">
         <button class="btn btn-primary practice-view-btn active" data-view="quiz-view" type="button">🎯 কুইজ</button>
         <button class="btn practice-view-btn" data-view="pairs-view" type="button">⚖️ পার্থক্য</button>
-        <button class="btn practice-view-btn" data-view="trace-view" type="button">✍️ হাতে লেখা</button>
+        <button class="btn practice-view-btn" data-view="trace-view" type="button">✍️ লেখা</button>
+        <button class="btn practice-view-btn" data-view="report-view" type="button">📊 রিপোর্ট</button>
       </div>
 
       <!-- Sub-view 1: Smart Quiz -->
@@ -315,10 +320,21 @@
             <span class="quiz-stat-pill" id="quizStreak">🔥 ধারাবাহিক: ০</span>
           </div>
 
+          <div class="timed-hud" id="timedHud" style="display:none;">
+            <span>⏱️ সময়: <strong id="timedClock">৬০</strong>সে</span>
+            <span>🏆 হাই-স্কোর: <strong id="timedBest">০</strong></span>
+            <button class="btn btn-primary" id="timedStartBtn" type="button" style="padding:4px 12px; font-size:0.8rem;">শুরু করুন</button>
+          </div>
+
           <div class="quiz-modes">
-            <button class="btn btn-primary quiz-mode-btn active" data-mode="audio" type="button">🔊 উচ্চারণ শুনে</button>
-            <button class="btn quiz-mode-btn" data-mode="murakkab" type="button">🔗 মুরাক্কাব রূপ</button>
+            <button class="btn btn-primary quiz-mode-btn active" data-mode="audio" type="button">🔊 উচ্চারণ</button>
+            <button class="btn quiz-mode-btn" data-mode="murakkab" type="button">🔗 মুরাক্কাব</button>
             <button class="btn quiz-mode-btn" data-mode="makhraj" type="button">🗣️ মাখরাজ</button>
+            <button class="btn quiz-mode-btn" data-mode="harakat" type="button">✨ হরকত</button>
+            <button class="btn quiz-mode-btn" data-mode="word" type="button">🧩 শব্দ বিশ্লেষণ</button>
+            <button class="btn quiz-mode-btn" data-mode="pairs" type="button">⚖️ কঠিন জোড়া</button>
+            <button class="btn quiz-mode-btn" data-mode="timed" type="button">⚡ ৬০সে চ্যালেঞ্জ</button>
+            <button class="btn quiz-mode-btn" data-mode="srs" type="button">🧠 স্মার্ট রিভিশন</button>
             <button class="btn btn-gold quiz-mode-btn" data-mode="weak" type="button" id="weakModeBtn">⚠️ দুর্বল (০)</button>
           </div>
 
@@ -354,22 +370,52 @@
             হালকা চিহ্নের উপর মাউস বা আঙুল দিয়ে ডান থেকে বামে লিখে প্র্যাকটিস করুন।
           </p>
 
-          <div style="display:flex; justify-content:center; align-items:center; gap:8px; flex-wrap:wrap;">
-            <button class="btn" id="tracePrevBtn" type="button">⬅ পূর্ববর্তী</button>
-            <strong id="traceLetterLabel" style="min-width:110px;">আলিফ (ا)</strong>
-            <button class="btn" id="traceNextBtn" type="button">পরবর্তী ➡</button>
-            <button class="btn btn-primary" id="tracePlayBtn" type="button">🔊 শুনুন</button>
+          <div style="display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap;">
+            <button class="btn" id="tracePrevBtn" type="button">⬅</button>
+            <button class="btn" id="tracePickerOpenBtn" type="button" style="min-width:130px; justify-content:center;">
+              <span id="traceLetterLabel">আলিফ (ا)</span> ▾
+            </button>
+            <button class="btn" id="traceNextBtn" type="button">➡</button>
+            <button class="btn btn-primary" id="tracePlayBtn" type="button">🔊</button>
+          </div>
+
+          <div id="traceMetaBar" style="display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap; margin-top:8px;">
+            <span class="region-tag" id="traceBaselineTag">📏 লাইনের উপরে বসে</span>
+            <div id="traceFamilyPills" style="display:flex; gap:4px; direction:rtl;"></div>
           </div>
 
           <div class="tracing-canvas-box">
             <div class="tracing-guide" id="traceGuide">ا</div>
+            <canvas id="traceDemoCanvas" width="380" height="280"></canvas>
             <canvas id="traceCanvas" width="380" height="280"></canvas>
           </div>
 
+          <p id="traceTipBox" style="margin:0 0 10px; font-size:0.84rem; color:var(--text-muted);"></p>
+
           <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap;">
-            <button class="btn" id="traceGuideToggleBtn" type="button">👁️ গাইড</button>
+            <button class="btn btn-primary" id="traceAnimateBtn" type="button">▶ কীভাবে লিখবেন দেখুন</button>
+            <button class="btn" id="traceSpeedBtn" type="button">গতি: ০.৫x</button>
+            <button class="btn btn-gold" id="traceEvalBtn" type="button">🗣️ লেখা যাচাই</button>
+            <button class="btn" id="traceStartBtn" type="button" title="আলিফ থেকে শুরু করুন">⏮ শুরু</button>
             <button class="btn btn-danger" id="traceClearBtn" type="button">🗑️ মুছুন</button>
           </div>
+
+          <div id="traceEvalFeedback" class="info-block" style="display:none; margin-top:12px; text-align:left;"></div>
+        </div>
+      </div>
+
+      <!-- Sub-view 4: Mastery Heatmap & Report -->
+      <div id="report-view" class="practice-subview" style="display:none;">
+        <div class="glass-card" style="padding:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+            <div>
+              <h2 style="margin:0; font-size:1.15rem; color:var(--primary);">📊 ২৯ হরফের Mastery Heatmap</h2>
+              <p style="margin:2px 0 0; font-size:0.84rem; color:var(--text-muted);">কুইজের সঠিকতার ভিত্তিতে প্রতিটি হরফের দক্ষতা (সবুজ ≥ ৮০%, হলুদ ৫০–৭৯%, লাল &lt; ৫০%)</p>
+            </div>
+            <button class="btn btn-gold" id="badgeModalBtn" type="button">🏅 সাফল্যের ব্যাজ</button>
+          </div>
+          <div class="heatmap-grid" id="heatmapGrid"></div>
+          <div class="completion-badge-box" id="completionBadgeBox"></div>
         </div>
       </div>
     </section>
@@ -476,6 +522,19 @@
         <input type="range" id="setFontScale" min="0.85" max="1.35" step="0.05" value="1" style="width:100%; accent-color:var(--primary);" />
       </div>
 
+      <label class="setting-row">
+        <div>
+          <strong>🎨 কালার-কোডেড তাজবীদ</strong>
+          <span>ছোট সূরা ও উদাহরণে মাদ, গুন্নাহ ও কলকলাহ রঙ দিয়ে দেখাবে</span>
+        </div>
+        <input type="checkbox" class="ios-switch" id="setTajweedColorToggle" checked />
+      </label>
+
+      <div class="setting-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+        <strong>🧭 অ্যাপ গাইড ও ট্যুর</strong>
+        <button class="btn btn-primary" id="openTourFromSettingsBtn" type="button" style="justify-content:center;">❓ ফুল অ্যাপ ট্যুর দেখুন</button>
+      </div>
+
       <div class="setting-row" style="flex-direction:column; align-items:stretch; gap:8px;">
         <strong>💾 অগ্রগতি ব্যাকআপ ও রিস্টোর</strong>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -485,6 +544,38 @@
             <input type="file" id="importDataInput" accept=".json" style="display:none;" />
           </label>
         </div>
+      </div>
+
+      <div style="text-align:center; font-size:0.78rem; color:var(--text-muted); padding-top:4px;">
+        Learn Arabic PWA • ভার্সন <strong id="appVersionBadge">1.1.0</strong> (আগের ভার্সন: 1.0.1)
+      </div>
+    </div>
+  </section>
+
+  <!-- Tracing Letter Picker Grid Popup -->
+  <div class="modal-backdrop" id="tracePickerBackdrop"></div>
+  <section class="settings-modal" id="tracePickerModal" role="dialog" aria-modal="true" aria-labelledby="tracePickerTitle" style="width:min(94vw, 500px);">
+    <div class="settings-header">
+      <h2 id="tracePickerTitle" style="margin:0; font-size:1.08rem; color:var(--primary);">✍️ লেখার জন্য হরফ বাছাই করুন</h2>
+      <button class="sheet-close-btn" id="tracePickerCloseBtn" type="button" aria-label="বন্ধ করুন" style="display:inline-grid;">✕</button>
+    </div>
+    <div class="qaida-grid" id="tracePickerGrid" style="padding:10px; gap:7px; box-shadow:none; border:none; background:transparent;"></div>
+  </section>
+
+  <!-- Interactive Spotlight App Tour -->
+  <div class="tour-spotlight" id="tourSpotlight" aria-hidden="true"></div>
+  <section class="tour-tooltip" id="tourModal" role="dialog" aria-modal="true" aria-labelledby="tourTitle">
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px;">
+      <span class="tour-step-badge" id="tourStepBadge">১ / ৭</span>
+      <button class="sheet-close-btn" id="tourCloseBtn" type="button" aria-label="বন্ধ করুন" style="display:inline-grid; width:28px; height:28px; font-size:0.85rem;">✕</button>
+    </div>
+    <h3 id="tourTitle" style="margin:0 0 4px; font-size:1rem; color:var(--primary);"></h3>
+    <p id="tourBody" style="margin:0; font-size:0.86rem; color:var(--text-muted); line-height:1.5;"></p>
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:12px;">
+      <div class="tour-dots" id="tourDots" style="margin:0;"></div>
+      <div style="display:flex; gap:6px;">
+        <button class="btn" id="tourPrevBtn" type="button" aria-label="আগের ধাপ" style="padding:6px 12px;">&lt;</button>
+        <button class="btn btn-primary" id="tourNextBtn" type="button" aria-label="পরবর্তী ধাপ" style="padding:6px 14px;">&gt;</button>
       </div>
     </div>
   </section>
@@ -496,6 +587,7 @@
   </div>
 
   <script src="data.js"></script>
+  <script src="strokes.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

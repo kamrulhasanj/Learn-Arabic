@@ -114,30 +114,159 @@
     document.getElementById("weakModeBtn").textContent = `⚠️ দুর্বল হরফ (${toBnNum(weakSet.size)})`;
   }
 
-  // Theme, Focus & Speed controls
-  const themeBtn = document.getElementById("themeBtn");
-  if ((localStorage.getItem("madani_theme") || "light") === "dark") {
-    document.documentElement.setAttribute("data-theme", "dark");
-    themeBtn.textContent = "☀️";
-  }
+  // Settings State & Helpers
+  const DEFAULT_SETTINGS = {
+    focusMode: false,
+    darkTheme: (localStorage.getItem("madani_theme") || "light") === "dark",
+    showBnNames: true,
+    showMakhrajBadges: true,
+    autoStopRecorder: true,
+    soundFx: true,
+    haptic: true,
+    fontScale: 1.0,
+  };
+  let settings = { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem("madani_settings") || "{}") };
 
-  themeBtn.addEventListener("click", () => {
-    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-    if (isDark) {
-      document.documentElement.removeAttribute("data-theme");
-      localStorage.setItem("madani_theme", "light");
-      themeBtn.textContent = "🌙";
-    } else {
+  const themeBtn = document.getElementById("themeBtn");
+  const setFocusToggle = document.getElementById("setFocusToggle");
+  const setDarkToggle = document.getElementById("setDarkToggle");
+  const setBnNamesToggle = document.getElementById("setBnNamesToggle");
+  const setMakhrajBadgeToggle = document.getElementById("setMakhrajBadgeToggle");
+  const setAutoStopToggle = document.getElementById("setAutoStopToggle");
+  const setSoundFxToggle = document.getElementById("setSoundFxToggle");
+  const setHapticToggle = document.getElementById("setHapticToggle");
+  const setFontScale = document.getElementById("setFontScale");
+  const fontScaleLabel = document.getElementById("fontScaleLabel");
+
+  function applySettings() {
+    localStorage.setItem("madani_settings", JSON.stringify(settings));
+    document.body.classList.toggle("focus-mode", settings.focusMode);
+    document.body.classList.toggle("hide-bn-names", !settings.showBnNames);
+    document.body.classList.toggle("hide-makhraj-badges", !settings.showMakhrajBadges);
+    document.documentElement.style.setProperty("--ar-scale", String(settings.fontScale));
+
+    if (settings.darkTheme) {
       document.documentElement.setAttribute("data-theme", "dark");
       localStorage.setItem("madani_theme", "dark");
       themeBtn.textContent = "☀️";
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+      localStorage.setItem("madani_theme", "light");
+      themeBtn.textContent = "🌙";
     }
+
+    setFocusToggle.checked = settings.focusMode;
+    setDarkToggle.checked = settings.darkTheme;
+    setBnNamesToggle.checked = settings.showBnNames;
+    setMakhrajBadgeToggle.checked = settings.showMakhrajBadges;
+    setAutoStopToggle.checked = settings.autoStopRecorder;
+    setSoundFxToggle.checked = settings.soundFx;
+    setHapticToggle.checked = settings.haptic;
+    setFontScale.value = String(settings.fontScale);
+    fontScaleLabel.textContent = `${toBnNum(Math.round(settings.fontScale * 100))}%`;
+  }
+
+  function triggerHaptic(ms = 18) {
+    if (settings.haptic && navigator.vibrate) {
+      navigator.vibrate(ms);
+    }
+  }
+
+  function playFeedbackTone(isCorrect) {
+    if (!settings.soundFx) return;
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    try {
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = isCorrect ? "sine" : "triangle";
+      osc.frequency.setValueAtTime(isCorrect ? 660 : 220, ctx.currentTime);
+      if (isCorrect) osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.19);
+      setTimeout(() => ctx.close().catch(() => {}), 250);
+    } catch {}
+  }
+
+  themeBtn.addEventListener("click", () => {
+    settings.darkTheme = !settings.darkTheme;
+    applySettings();
   });
 
-  const focusBtn = document.getElementById("focusBtn");
-  focusBtn.addEventListener("click", () => {
-    const active = document.body.classList.toggle("focus-mode");
-    focusBtn.classList.toggle("active", active);
+  // Settings Modal Open/Close & Toggles
+  const settingsModal = document.getElementById("settingsModal");
+  const settingsBackdrop = document.getElementById("settingsBackdrop");
+  const openSettings = () => {
+    settingsBackdrop.classList.add("open");
+    settingsModal.classList.add("open");
+  };
+  const closeSettings = () => {
+    settingsBackdrop.classList.remove("open");
+    settingsModal.classList.remove("open");
+  };
+  document.getElementById("settingsBtn").addEventListener("click", openSettings);
+  document.getElementById("settingsCloseBtn").addEventListener("click", closeSettings);
+  settingsBackdrop.addEventListener("click", closeSettings);
+
+  setFocusToggle.addEventListener("change", () => { settings.focusMode = setFocusToggle.checked; applySettings(); });
+  setDarkToggle.addEventListener("change", () => { settings.darkTheme = setDarkToggle.checked; applySettings(); });
+  setBnNamesToggle.addEventListener("change", () => { settings.showBnNames = setBnNamesToggle.checked; applySettings(); });
+  setMakhrajBadgeToggle.addEventListener("change", () => { settings.showMakhrajBadges = setMakhrajBadgeToggle.checked; applySettings(); });
+  setAutoStopToggle.addEventListener("change", () => { settings.autoStopRecorder = setAutoStopToggle.checked; applySettings(); });
+  setSoundFxToggle.addEventListener("change", () => { settings.soundFx = setSoundFxToggle.checked; applySettings(); });
+  setHapticToggle.addEventListener("change", () => { settings.haptic = setHapticToggle.checked; applySettings(); });
+  setFontScale.addEventListener("input", () => { settings.fontScale = Number(setFontScale.value); applySettings(); });
+
+  // Export & Import Backup
+  document.getElementById("exportDataBtn").addEventListener("click", () => {
+    const payload = {
+      learned: [...learnedSet],
+      weak: [...weakSet],
+      streak: Number(localStorage.getItem("madani_streak") || "1"),
+      todayDate: localStorage.getItem("madani_today_date") || getDateKey(),
+      todayCount: Number(localStorage.getItem("madani_today_count") || "0"),
+      settings,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "learn-arabic-backup.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById("importDataInput").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(String(reader.result));
+        if (Array.isArray(data.learned)) {
+          learnedSet = new Set(data.learned);
+          localStorage.setItem("madani_learned", JSON.stringify([...learnedSet]));
+        }
+        if (Array.isArray(data.weak)) {
+          weakSet = new Set(data.weak);
+          localStorage.setItem("madani_weak", JSON.stringify([...weakSet]));
+        }
+        if (data.streak) localStorage.setItem("madani_streak", String(data.streak));
+        if (data.settings) settings = { ...DEFAULT_SETTINGS, ...data.settings };
+        applySettings();
+        updateProgressUI();
+        updateWeakBtnUI();
+        updateStreakUI(false);
+        renderAlphabetGrid();
+        closeSettings();
+      } catch {}
+    };
+    reader.readAsText(file);
   });
 
   const speedBtn = document.getElementById("speedBtn");
@@ -302,6 +431,7 @@
             ▶ নিজের কণ্ঠ শুনুন
           </button>
         </div>
+        <canvas id="recWaveform" width="320" height="34"></canvas>
         <div id="recStatus" style="font-size:0.78rem; color:var(--text-muted); margin-top:4px;"></div>
       </div>
 
@@ -346,10 +476,12 @@
       });
     });
 
-    // Offline Recorder with Auto-Stop Silence Detection
+    // Offline Recorder with Auto-Stop Silence Detection & Waveform
     const recToggleBtn = document.getElementById("recToggleBtn");
     const recPlayBtn = document.getElementById("recPlayBtn");
     const recStatus = document.getElementById("recStatus");
+    const recWaveform = document.getElementById("recWaveform");
+    const waveCtx = recWaveform.getContext("2d");
 
     const stopRecordingNow = () => {
       if (mediaRecorder && mediaRecorder.state === "recording") {
@@ -392,10 +524,13 @@
 
         mediaRecorder.start();
         isRecording = true;
+        recWaveform.classList.add("visible");
         recToggleBtn.textContent = "⏹ থামান";
-        recStatus.textContent = "🎙️ শুনছি... হরফটি বলুন (বলা শেষে নিজে থেকেই থেমে যাবে)";
+        recStatus.textContent = settings.autoStopRecorder
+          ? "🎙️ শুনছি... হরফটি বলুন (বলা শেষে নিজে থেকেই থেমে যাবে)"
+          : "🎙️ রেকর্ডিং চলছে... থামাতে 'থামান' চাপুন।";
 
-        // Silence detection via Web Audio API
+        // Live Waveform + Silence Detection via Web Audio API
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         if (AudioCtx) {
           recAudioCtx = new AudioCtx();
@@ -412,6 +547,22 @@
           const monitorSilence = () => {
             if (!isRecording) return;
             analyser.getByteTimeDomainData(buf);
+
+            // Draw waveform
+            waveCtx.clearRect(0, 0, recWaveform.width, recWaveform.height);
+            waveCtx.lineWidth = 2;
+            waveCtx.strokeStyle = settings.darkTheme ? "#3ecf8e" : "#0f5132";
+            waveCtx.beginPath();
+            const slice = recWaveform.width / buf.length;
+            let x = 0;
+            for (let i = 0; i < buf.length; i++) {
+              const y = (buf[i] / 128.0) * (recWaveform.height / 2);
+              if (i === 0) waveCtx.moveTo(x, y);
+              else waveCtx.lineTo(x, y);
+              x += slice;
+            }
+            waveCtx.stroke();
+
             let sum = 0;
             for (let i = 0; i < buf.length; i++) {
               const v = (buf[i] - 128) / 128;
@@ -420,29 +571,32 @@
             const rms = Math.sqrt(sum / buf.length);
             const now = performance.now();
 
-            if (rms > 0.022) {
-              speechStarted = true;
-              silenceStart = null;
-              recStatus.textContent = "🗣️ কণ্ঠ ধরা পড়েছে... বলা শেষ হলেই থামবে।";
-            } else if (speechStarted) {
-              if (!silenceStart) silenceStart = now;
-              if (now - silenceStart > 850) {
+            if (settings.autoStopRecorder) {
+              if (rms > 0.022) {
+                speechStarted = true;
+                silenceStart = null;
+                recStatus.textContent = "🗣️ কণ্ঠ ধরা পড়েছে... বলা শেষ হলেই থামবে।";
+              } else if (speechStarted) {
+                if (!silenceStart) silenceStart = now;
+                if (now - silenceStart > 850) {
+                  stopRecordingNow();
+                  return;
+                }
+              } else if (now - startedAt > 4500) {
                 stopRecordingNow();
                 return;
               }
-            } else if (now - startedAt > 4500) {
-              stopRecordingNow();
-              return;
             }
             recRafId = requestAnimationFrame(monitorSilence);
           };
           recRafId = requestAnimationFrame(monitorSilence);
         }
 
-        // Hard safety limit 6s
-        recMaxTimer = setTimeout(() => {
-          if (isRecording) stopRecordingNow();
-        }, 6000);
+        if (settings.autoStopRecorder) {
+          recMaxTimer = setTimeout(() => {
+            if (isRecording) stopRecordingNow();
+          }, 6000);
+        }
       } catch {
         stopRecorderCleanup();
         recStatus.textContent = "মাইক্রোফোনের অনুমতি পাওয়া যায়নি।";
@@ -688,7 +842,91 @@
       btn.addEventListener("click", () => playAudioFile(t.audio));
       tGrid.appendChild(btn);
     });
+
+    const twGrid = document.getElementById("tanweenGrid");
+    twGrid.innerHTML = "";
+    DATA.tanweenExamples.forEach((tw) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn";
+      btn.style.flexDirection = "column";
+      btn.style.padding = "10px 14px";
+      btn.innerHTML = `<span class="ar" style="font-size:2rem; color:var(--primary);">${tw.text}</span><span style="font-size:0.76rem;">${tw.note}</span>`;
+      btn.addEventListener("click", () => {
+        updateStreakUI(true);
+        playAudioFile(tw.audio);
+      });
+      twGrid.appendChild(btn);
+    });
+
+    const mGrid = document.getElementById("maddGrid");
+    mGrid.innerHTML = "";
+    DATA.maddExamples.forEach((md) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn";
+      btn.style.flexDirection = "column";
+      btn.style.padding = "10px 14px";
+      btn.innerHTML = `<span class="ar" style="font-size:2rem; color:var(--primary);">${md.text}</span><span class="region-tag" style="margin:2px 0;">${md.tag}</span><span style="font-size:0.74rem;">${md.note}</span>`;
+      btn.addEventListener("click", () => {
+        updateStreakUI(true);
+        playAudioFile(md.audio);
+      });
+      mGrid.appendChild(btn);
+    });
+
+    const surahContainer = document.getElementById("surahContainer");
+    surahContainer.innerHTML = "";
+    DATA.surahs.forEach((surah) => {
+      const card = document.createElement("div");
+      card.className = "surah-card";
+      const ayahsHtml = surah.ayahs
+        .map(
+          (ayah) => `
+          <div class="ayah-row">
+            ${ayah
+              .map(
+                (w) => `
+              <button type="button" class="surah-word" data-audio="${w.audio}">
+                <span class="ar-word">${w.ar}</span>
+                <span class="bn-word">${w.bn}</span>
+                <span class="rule-word">${w.rule}</span>
+              </button>
+            `
+              )
+              .join("")}
+          </div>
+        `
+        )
+        .join("");
+
+      card.innerHTML = `
+        <h3 style="margin:0 0 2px; color:var(--primary);">${surah.title}</h3>
+        <p style="margin:0 0 8px; font-size:0.84rem; color:var(--text-muted);">${surah.subtitle}</p>
+        ${ayahsHtml}
+      `;
+      card.querySelectorAll(".surah-word").forEach((wordBtn) => {
+        wordBtn.addEventListener("click", () => {
+          card.querySelectorAll(".surah-word.playing").forEach((el) => el.classList.remove("playing"));
+          wordBtn.classList.add("playing");
+          updateStreakUI(true);
+          triggerHaptic(12);
+          playAudioFile(wordBtn.dataset.audio, () => wordBtn.classList.remove("playing"));
+        });
+      });
+      surahContainer.appendChild(card);
+    });
   }
+
+  document.querySelectorAll(".harakat-subtab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".harakat-subtab-btn").forEach((b) => b.classList.remove("btn-primary", "active"));
+      btn.classList.add("btn-primary", "active");
+      document.querySelectorAll(".harakat-subview").forEach((v) => {
+        v.style.display = v.id === btn.dataset.hview ? "block" : "none";
+      });
+    });
+  });
 
   // TAB 4: Makhraj
   function renderMakhrajList(regionFilter = "all") {
@@ -1011,6 +1249,8 @@
       clickedBtn.classList.add("correct");
       feedback.style.color = "var(--primary)";
       feedback.textContent = `মাশাআল্লাহ! সঠিক উত্তর — ${target.bnName} (${target.char})`;
+      playFeedbackTone(true);
+      triggerHaptic(20);
       if (quizMode === "weak" && weakSet.has(target.id)) {
         weakSet.delete(target.id);
       }
@@ -1021,6 +1261,8 @@
       feedback.textContent = correctMakhraj
         ? `ভুল হয়েছে। সঠিক উত্তর: মাখরাজ ${toBnNum(correctMakhraj.num)} — ${correctMakhraj.title}`
         : `ভুল হয়েছে। সঠিক উত্তর: ${target.bnName} (${target.char})`;
+      playFeedbackTone(false);
+      triggerHaptic([35, 30, 35]);
       weakSet.add(target.id);
     }
 
@@ -1063,13 +1305,38 @@
     }
   });
 
-  // Register Service Worker & auto-refresh when a new version activates
+  // Mobile Swipe Gestures on Inspector Sheet (Down to close, Left/Right to navigate)
+  let touchStartX = 0;
+  let touchStartY = 0;
+  inspectorEl.addEventListener("touchstart", (e) => {
+    if (!e.touches.length) return;
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  inspectorEl.addEventListener("touchend", (e) => {
+    if (!e.changedTouches.length || window.innerWidth > 980) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if (dy > 75 && Math.abs(dy) > Math.abs(dx) * 1.4 && inspectorEl.scrollTop <= 0) {
+      closeMobileSheet();
+    } else if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      stopAutoPlay();
+      selectLetter(dx < 0 ? selectedIndex + 1 : selectedIndex - 1, true);
+    }
+  }, { passive: true });
+
+  // Register Service Worker & show non-intrusive update toast when a new version activates
+  const updateToast = document.getElementById("updateToast");
+  document.getElementById("reloadAppBtn").addEventListener("click", () => window.location.reload());
+
   if ("serviceWorker" in navigator && (location.protocol === "http:" || location.protocol === "https:")) {
-    let swRefreshing = false;
+    let hadController = Boolean(navigator.serviceWorker.controller);
     navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (swRefreshing) return;
-      swRefreshing = true;
-      window.location.reload();
+      if (hadController) {
+        updateToast.classList.add("show");
+      }
+      hadController = true;
     });
     navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then((reg) => {
       reg.update().catch(() => {});
@@ -1095,6 +1362,7 @@
   });
 
   // Initial render (shouldPlay = false so page reload never auto-plays audio)
+  applySettings();
   updateStreakUI(false);
   updateProgressUI();
   updateWeakBtnUI();

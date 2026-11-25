@@ -832,5 +832,138 @@ window.MADANI_DATA = {
     { text: "عَمَّ", audio: "audio/t_amma.mp3", note: "মীম তাশদীদ — নাকের বাঁশি থেকে ১ আলিফ গুন্নাহ ওয়াজিব" },
     { text: "ثُمَّ", audio: "audio/t_thumma.mp3", note: "মীম তাশদীদ — গুন্নাহসহ দুইবার চাপ দিয়ে পড়া" },
     { text: "رَبِّ", audio: "audio/t_rabbi.mp3", note: "সাধারণ তাশদীদ — শক্ত করে দুইবার পড়া (গুন্নাহ নয়)" }
+  ],
+
+  // তানবীন ও খাঁড়া হরকত
+  tanweenExamples: [
+    { text: "بًا", audio: "audio/tw_baa_an.mp3", note: "দুই যবর (আন) — বান" },
+    { text: "بٍ", audio: "audio/tw_baa_in.mp3", note: "দুই যের (ইন) — বিন" },
+    { text: "بٌ", audio: "audio/tw_baa_un.mp3", note: "দুই পেশ (উন) — বুন" },
+    { text: "عَلِيْمًا", audio: "audio/tw_aliman.mp3", note: "শব্দের শেষে দুই যবর (আলীমান)" },
+    { text: "كِتٰبٌ", audio: "audio/tw_kitabun.mp3", note: "খাঁড়া যবর ও দুই পেশ (কিতাবুন)" },
+    { text: "بَيْتٍ", audio: "audio/tw_baytin.mp3", note: "শব্দের শেষে দুই যের (বাইতিন)" },
+    { text: "ذٰلِكَ", audio: "audio/tw_dhalika.mp3", note: "খাঁড়া যবর — ১ আলিফ টেনে (যালিকা)" },
+    { text: "بِهٖ", audio: "audio/tw_bihi.mp3", note: "খাঁড়া যের — ১ আলিফ টেনে (বিহী)" },
+    { text: "لَهٗ", audio: "audio/tw_lahu.mp3", note: "উল্টা পেশ — ১ আলিফ টেনে (লাহূ)" }
+  ],
+
+  // মাদ (টেনে পড়া) ও লীন হরফ
+  maddExamples: [
+    { text: "قَالَ", audio: "audio/md_qala.mp3", tag: "১ আলিফ মাদ", note: "যবরের পর খালি আলিফ — ক্বা-লা" },
+    { text: "قِيْلَ", audio: "audio/md_qeela.mp3", tag: "১ আলিফ মাদ", note: "যেরের পর ইয়া সাকিন — ক্বী-লা" },
+    { text: "يَقُوْلُ", audio: "audio/md_yaqoolu.mp3", tag: "১ আলিফ মাদ", note: "পেশের পর ওয়াও সাকিন — ইয়াক্বূ-লু" },
+    { text: "بَيْتٌ", audio: "audio/md_bayt.mp3", tag: "লীন হরফ", note: "যবরের পর ইয়া সাকিন (নরমভাবে বাইতুন)" },
+    { text: "خَوْفٌ", audio: "audio/md_khawf.mp3", tag: "লীন হরফ", note: "যবরের পর ওয়াও সাকিন (নরমভাবে খাওফুন)" },
+    { text: "سَمَآءٌ", audio: "audio/md_samaa.mp3", tag: "৪ আলিফ মাদ", note: "মোটা মাদ (মাদ্দে মুত্তাসিল) — সামাাা-উন" },
+    { text: "اُوْلٰٓئِكَ", audio: "audio/md_ulaika.mp3", tag: "৪ আলিফ মাদ", note: "উলাাা-ইকা" }
+  ],
+
+  // ছোট সূরা (Word-by-Word)
+  surahs: [
+    {
+      id: "fatihah",
+      title: "সূরা আল-ফাতিহা (আয়াত ১–৭)",
+      subtitle: "প্রতিটি শব্দে ক্লিক করে উচ্চারণ ও তাজবীদ নিয়ম দেখুন",
+      ayahs: [
+        [
+          { ar: "بِسْمِ", bn: "বিসমি", audio: "audio/sf_01.mp3", rule: "সাধারণ" },
+          { ar: "اللّٰهِ", bn: "ল্লা-হি", audio: "audio/sf_02.mp3", rule: "১ আলিফ মাদ" },
+          { ar: "الرَّحْمٰنِ", bn: "ররহমা-নি", audio: "audio/sf_03.mp3", rule: "খাঁড়া যবর (১ আলিফ)" },
+          { ar: "الرَّحِيْمِ", bn: "ররহী-ম", audio: "audio/sf_04.mp3", rule: "মাদ্দে আরিদ (৩ আলিফ)" }
+        ],
+        [
+          { ar: "اَلْحَمْدُ", bn: "আলহামদু", audio: "audio/sf_05.mp3", rule: "সাকিন স্পষ্ট" },
+          { ar: "لِلّٰهِ", bn: "লিল্লা-হি", audio: "audio/sf_06.mp3", rule: "১ আলিফ মাদ" },
+          { ar: "رَبِّ", bn: "রব্বি", audio: "audio/sf_07.mp3", rule: "তাশদীদ" },
+          { ar: "الْعٰلَمِيْنَ", bn: "ল আ-লামী-ন", audio: "audio/sf_08.mp3", rule: "খাঁড়া যবর ও মাদ" }
+        ],
+        [
+          { ar: "مٰلِكِ", bn: "মা-লিকি", audio: "audio/sf_09.mp3", rule: "খাঁড়া যবর (১ আলিফ)" },
+          { ar: "يَوْمِ", bn: "ইয়াওমি", audio: "audio/sf_10.mp3", rule: "লীন হরফ" },
+          { ar: "الدِّيْنِ", bn: "দ্দী-ন", audio: "audio/sf_11.mp3", rule: "তাশদীদ ও মাদ" }
+        ],
+        [
+          { ar: "اِيَّاكَ", bn: "ইয়্যা-কা", audio: "audio/sf_12.mp3", rule: "তাশদীদ ও ১ আলিফ মাদ" },
+          { ar: "نَعْبُدُ", bn: "না'বুদু", audio: "audio/sf_13.mp3", rule: "হলকী আইন (ع)" },
+          { ar: "وَاِيَّاكَ", bn: "ওয়া ইয়্যা-কা", audio: "audio/sf_14.mp3", rule: "তাশদীদ ও মাদ" },
+          { ar: "نَسْتَعِيْنُ", bn: "নাসতাঈ-ন", audio: "audio/sf_15.mp3", rule: "মাদ্দে আরিদ" }
+        ],
+        [
+          { ar: "اِهْدِنَا", bn: "ইহদিনা-", audio: "audio/sf_16.mp3", rule: "১ আলিফ মাদ" },
+          { ar: "الصِّرَاطَ", bn: "স্সিরা-ত্ব", audio: "audio/sf_17.mp3", rule: "মোটা হরফ (ص ط)" },
+          { ar: "الْمُسْتَقِيْمَ", bn: "ল মুসতাক্বী-ম", audio: "audio/sf_18.mp3", rule: "ক্বফ (ق) ও মাদ" }
+        ],
+        [
+          { ar: "صِرَاطَ", bn: "সিরা-ত্ব", audio: "audio/sf_19.mp3", rule: "মোটা হরফ" },
+          { ar: "الَّذِيْنَ", bn: "ল্লাযী-না", audio: "audio/sf_20.mp3", rule: "নরম যাল (ذ)" },
+          { ar: "اَنْعَمْتَ", bn: "আন'আমতা", audio: "audio/sf_21.mp3", rule: "ইযহার (গুন্নাহ ছাড়া)" },
+          { ar: "عَلَيْهِمْ", bn: "আলাইহিম", audio: "audio/sf_22.mp3", rule: "লীন হরফ" }
+        ],
+        [
+          { ar: "غَيْرِ", bn: "গাইরি", audio: "audio/sf_23.mp3", rule: "গইন (غ) ও লীন" },
+          { ar: "الْمَغْضُوْبِ", bn: "ল মাগদূ-বি", audio: "audio/sf_24.mp3", rule: "দ্বদ (ض) ও মাদ" },
+          { ar: "عَلَيْهِمْ", bn: "আলাইহিম", audio: "audio/sf_22.mp3", rule: "লীন হরফ" },
+          { ar: "وَلَا", bn: "ওয়া লা-", audio: "audio/sf_25.mp3", rule: "১ আলিফ মাদ" },
+          { ar: "الضَّآلِّيْنَ", bn: "দ্দাাা-ল্লী-ন", audio: "audio/sf_26.mp3", rule: "৬ আলিফ মাদ্দে লাযিম" }
+        ]
+      ]
+    },
+    {
+      id: "ikhlas",
+      title: "সূরা আল-ইখলাস (আয়াত ১–৪)",
+      subtitle: "কলকলাহ ও তাশদীদ অনুশীলনের জন্য সেরা সূরা",
+      ayahs: [
+        [
+          { ar: "قُلْ", bn: "কুল", audio: "audio/si_01.mp3", rule: "মোটা ক্বফ (ق)" },
+          { ar: "هُوَ", bn: "হুওয়া", audio: "audio/si_02.mp3", rule: "নরম হা (ه)" },
+          { ar: "اللّٰهُ", bn: "ল্লা-হু", audio: "audio/si_03.mp3", rule: "১ আলিফ মাদ" },
+          { ar: "اَحَدٌ", bn: "আহাদ্", audio: "audio/si_04.mp3", rule: "দাল কলকলাহ (ওয়াকফে)" }
+        ],
+        [
+          { ar: "اَللّٰهُ", bn: "আল্লা-হু", audio: "audio/si_03.mp3", rule: "১ আলিফ মাদ" },
+          { ar: "الصَّمَدُ", bn: "স্সমাদ্", audio: "audio/si_05.mp3", rule: "মোটা ছদ ও কলকলাহ" }
+        ],
+        [
+          { ar: "لَمْ", bn: "লাম", audio: "audio/si_06.mp3", rule: "মীম সাকিন" },
+          { ar: "يَلِدْ", bn: "ইয়ালিদ", audio: "audio/si_07.mp3", rule: "দাল কলকলাহ (دْ)" },
+          { ar: "وَلَمْ", bn: "ওয়া লাম", audio: "audio/si_08.mp3", rule: "মীম সাকিন" },
+          { ar: "يُوْلَدْ", bn: "ইয়ূ-লাদ", audio: "audio/si_09.mp3", rule: "মাদ ও কলকলাহ" }
+        ],
+        [
+          { ar: "وَلَمْ", bn: "ওয়া লাম", audio: "audio/si_10.mp3", rule: "মীম সাকিন" },
+          { ar: "يَكُنْ", bn: "ইয়াকুল", audio: "audio/si_11.mp3", rule: "নূন সাকিনে ইদগাম" },
+          { ar: "لَّهٗ", bn: "ল্লাহূ", audio: "audio/si_12.mp3", rule: "উল্টা পেশ (১ আলিফ)" },
+          { ar: "كُفُوًا", bn: "কুফুওয়ান", audio: "audio/si_13.mp3", rule: "তানবীন" },
+          { ar: "اَحَدٌ", bn: "আহাদ্", audio: "audio/si_04.mp3", rule: "দাল কলকলাহ" }
+        ]
+      ]
+    },
+    {
+      id: "asr",
+      title: "সূরা আল-আসর (আয়াত ১–৩)",
+      subtitle: "গুন্নাহ ও তাশদীদসহ ছোট সূরা অনুশীলন",
+      ayahs: [
+        [
+          { ar: "وَالْعَصْرِ", bn: "ওয়াল আসর", audio: "audio/sa_01.mp3", rule: "আইন (ع) ও মোটা ছদ" }
+        ],
+        [
+          { ar: "اِنَّ", bn: "ইন্না", audio: "audio/sa_02.mp3", rule: "১ আলিফ গুন্নাহ (نّ)" },
+          { ar: "الْاِنْسَانَ", bn: "ল ইনসা-না", audio: "audio/sa_03.mp3", rule: "ইখফা গুন্নাহ ও মাদ" },
+          { ar: "لَفِيْ", bn: "লাফী-", audio: "audio/sa_04.mp3", rule: "১ আলিফ মাদ" },
+          { ar: "خُسْرٍ", bn: "খুসর", audio: "audio/sa_05.mp3", rule: "মোটা খ (خ)" }
+        ],
+        [
+          { ar: "اِلَّا", bn: "ইল্লা-", audio: "audio/sa_06.mp3", rule: "১ আলিফ মাদ" },
+          { ar: "الَّذِيْنَ", bn: "ল্লাযী-না", audio: "audio/sa_07.mp3", rule: "নরম যাল (ذ)" },
+          { ar: "اٰمَنُوْا", bn: "আ-মানূ-", audio: "audio/sa_08.mp3", rule: "খাঁড়া যবর ও মাদ" },
+          { ar: "وَعَمِلُوا", bn: "ওয়া আমিলু", audio: "audio/sa_09.mp3", rule: "আইন (ع)" },
+          { ar: "الصّٰلِحٰتِ", bn: "স্সা-লিহা-তি", audio: "audio/sa_10.mp3", rule: "মোটা ছদ ও খাঁড়া যবর" },
+          { ar: "وَتَوَاصَوْا", bn: "ওয়া তাওয়া-সাও", audio: "audio/sa_11.mp3", rule: "লীন হরফ" },
+          { ar: "بِالْحَقِّ", bn: "বিল হাক্ক", audio: "audio/sa_12.mp3", rule: "হলকী হা ও তাশদীদ" },
+          { ar: "وَتَوَاصَوْا", bn: "ওয়া তাওয়া-সাও", audio: "audio/sa_11.mp3", rule: "লীন হরফ" },
+          { ar: "بِالصَّبْرِ", bn: "বিস্সব্‌র", audio: "audio/sa_13.mp3", rule: "বা কলকলাহ (بْ)" }
+        ]
+      ]
+    }
   ]
 };

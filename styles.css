@@ -22,6 +22,7 @@
   --radius: 20px;
   --font-bn: 'Hind Siliguri', 'Bangla Sangam MN', 'Noto Sans Bengali', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-ar: 'Geeza Pro', 'Amiri', 'Scheherazade New', 'Traditional Arabic', 'Noto Naskh Arabic', serif;
+  --ar-scale: 1;
 }
 
 [data-theme="dark"] {
@@ -1255,4 +1256,245 @@ body.focus-mode .lesson-banner:hover {
   .bottom-nav-btn.active .bnav-icon {
     background: var(--primary-soft);
   }
+}
+
+/* =========================================================
+   SETTINGS MODAL, iOS SWITCHES, SURAH & WAVEFORM
+   ========================================================= */
+.card-ar {
+  font-size: calc(2.55rem * var(--ar-scale));
+}
+
+@media (max-width: 560px) {
+  .card-ar {
+    font-size: calc(2rem * var(--ar-scale));
+  }
+}
+
+body.hide-bn-names .card-bn {
+  visibility: hidden;
+}
+
+body.hide-makhraj-badges .card-makhraj-badge {
+  display: none;
+}
+
+/* Settings Modal */
+.modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  background: rgba(10, 20, 15, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.modal-backdrop.open {
+  display: block;
+}
+
+.settings-modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 130;
+  width: min(92vw, 460px);
+  max-height: 85vh;
+  overflow-y: auto;
+  background: var(--glass-strong);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  border-radius: 24px;
+  padding: 18px;
+}
+
+.settings-modal.open {
+  display: block;
+  animation: fadeSlide 0.2s ease;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+
+.settings-list {
+  display: grid;
+  gap: 10px;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--glass-subtle);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.setting-row strong {
+  display: block;
+  font-size: 0.9rem;
+}
+
+.setting-row span {
+  display: block;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+/* Apple iOS-style Toggle Switch */
+.ios-switch {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 46px;
+  height: 27px;
+  flex-shrink: 0;
+  background: rgba(120, 130, 125, 0.32);
+  border-radius: 999px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.ios-switch::after {
+  content: "";
+  position: absolute;
+  top: 2.5px;
+  left: 2.5px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
+  transition: transform 0.2s ease;
+}
+
+.ios-switch:checked {
+  background: var(--primary);
+}
+
+.ios-switch:checked::after {
+  transform: translateX(19px);
+}
+
+/* Recorder Waveform */
+#recWaveform {
+  width: 100%;
+  height: 34px;
+  margin-top: 6px;
+  border-radius: 8px;
+  background: var(--glass-subtle);
+  border: 1px solid var(--border);
+  display: none;
+}
+
+#recWaveform.visible {
+  display: block;
+}
+
+/* Surah Word-by-Word */
+.surah-card {
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow);
+  border-radius: 20px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.ayah-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  direction: rtl;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.ayah-row:last-child {
+  border-bottom: none;
+}
+
+.surah-word {
+  direction: ltr;
+  background: var(--glass-strong);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 8px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.surah-word:hover,
+.surah-word.playing {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  transform: translateY(-2px);
+}
+
+.surah-word .ar-word {
+  font-family: var(--font-ar);
+  font-size: calc(1.9rem * var(--ar-scale));
+  line-height: 1.4;
+  display: block;
+}
+
+.surah-word .bn-word {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--primary);
+  display: block;
+}
+
+.surah-word .rule-word {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  display: block;
+}
+
+/* PWA Update Toast */
+.update-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 84px;
+  transform: translateX(-50%) translateY(120px);
+  z-index: 150;
+  background: var(--glass-strong);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--primary);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+  border-radius: 999px;
+  padding: 8px 10px 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.25s ease;
+}
+
+.update-toast.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
 }

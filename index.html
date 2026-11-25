@@ -32,14 +32,14 @@
         <button class="pill-btn" id="installAppBtn" type="button" style="display:none;" title="অ্যাপ ইনস্টল করুন">
           📲 <span class="btn-text-hide-sm">ইনস্টল</span>
         </button>
-        <button class="pill-btn" id="focusBtn" type="button" title="মনোযোগ মোড">
-          🎯 <span class="btn-text-hide-sm">মনোযোগ</span>
-        </button>
         <button class="pill-btn" id="speedBtn" type="button" title="অডিওর গতি">
           <span id="speedLabel">১.০x</span>
         </button>
         <button class="pill-btn" id="themeBtn" type="button" title="দিন/রাত থিম">
           🌙
+        </button>
+        <button class="pill-btn" id="settingsBtn" type="button" title="অ্যাপ সেটিংস">
+          ⚙️
         </button>
       </div>
     </div>
@@ -170,35 +170,64 @@
       </div>
     </section>
 
-    <!-- TAB 3: হরকত, কলকলাহ ও তাশদীদ -->
+    <!-- TAB 3: হরকত, তানবীন, মাদ ও ছোট সূরা -->
     <section class="tab-panel" id="panel-harakat">
-      <div class="lesson-banner">
-        <div>
-          <h2 style="margin: 0 0 4px; font-size: 1.18rem; color: var(--primary);">
-            হরকত (যবর, যের, পেশ), কলকলাহ ও তাশদীদ
-          </h2>
-          <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">
-            এক যবর (আ-কার), এক যের (ই-কার), এক পেশ (উ-কার) — হরকত তাড়াতাড়ি পড়তে হয়, টানতে হয় না। প্রতিটি ঘরে ক্লিক করে উচ্চারণ শুনুন।
+      <div class="practice-subtabs" style="justify-content:center;">
+        <button class="btn btn-primary harakat-subtab-btn active" data-hview="h-harakat" type="button">✨ হরকত ও তানবীন</button>
+        <button class="btn harakat-subtab-btn" data-hview="h-tajweed" type="button">⚡ মাদ, কলকলাহ ও তাশদীদ</button>
+        <button class="btn harakat-subtab-btn" data-hview="h-surah" type="button">📖 ছোট সূরা (Word-by-Word)</button>
+      </div>
+
+      <div id="h-harakat" class="harakat-subview">
+        <div class="lesson-banner">
+          <div>
+            <h2 style="margin: 0 0 4px; font-size: 1.15rem; color: var(--primary);">
+              হরকত (যবর, যের, পেশ) ও তানবীন
+            </h2>
+            <p style="margin: 0; font-size: 0.88rem; color: var(--text-muted);">
+              এক যবর (আ-কার), এক যের (ই-কার), এক পেশ (উ-কার) — তাড়াতাড়ি পড়তে হয়। প্রতিটি ঘরে ক্লিক করে উচ্চারণ শুনুন।
+            </p>
+          </div>
+        </div>
+        <div class="harakat-grid" id="harakatGrid"></div>
+
+        <div class="exam-box">
+          <h3 style="margin: 0 0 6px; color: var(--primary);">🔹 তানবীন (ً ٍ ٌ) ও খাঁড়া হরকত</h3>
+          <p style="margin: 0 0 12px; font-size: 0.88rem; color: var(--text-muted);">
+            দুই যবর (আন), দুই যের (ইন), দুই পেশ (উন) এবং খাঁড়া যবর/যের/উল্টা পেশ (১ আলিফ মাদ)।
           </p>
+          <div style="display:flex; flex-wrap:wrap; gap:10px; direction:rtl;" id="tanweenGrid"></div>
         </div>
       </div>
 
-      <div class="harakat-grid" id="harakatGrid"></div>
+      <div id="h-tajweed" class="harakat-subview" style="display:none;">
+        <div class="exam-box" style="margin-top:0;">
+          <h3 style="margin: 0 0 6px; color: var(--primary);">🎶 মাদ (টেনে পড়া) ও লীন হরফ</h3>
+          <p style="margin: 0 0 12px; font-size: 0.88rem; color: var(--text-muted);">
+            কোরআন পড়ার সময় কোন হরফে ১ আলিফ বা ৪ আলিফ টেনে পড়তে হয় তা শুনে অনুশীলন করুন।
+          </p>
+          <div style="display:flex; flex-wrap:wrap; gap:10px; direction:rtl;" id="maddGrid"></div>
+        </div>
 
-      <div class="exam-box">
-        <h3 style="margin: 0 0 6px; color: var(--primary);">⚡ কলকলাহ (সাকিন অবস্থায় প্রতিধ্বনি — ق ط ب ج د)</h3>
-        <p style="margin: 0 0 12px; font-size: 0.88rem; color: var(--text-muted);">
-          এই ৫টি হরফে জযম/সাকিন থাকলে উচ্চারণের সময় ধাক্কা বা প্রতিধ্বনি দিয়ে পড়তে হয়।
-        </p>
-        <div style="display:flex; flex-wrap:wrap; gap:10px; direction:rtl;" id="qalqalahGrid"></div>
+        <div class="exam-box">
+          <h3 style="margin: 0 0 6px; color: var(--primary);">⚡ কলকলাহ (সাকিন অবস্থায় প্রতিধ্বনি — ق ط ب ج د)</h3>
+          <p style="margin: 0 0 12px; font-size: 0.88rem; color: var(--text-muted);">
+            এই ৫টি হরফে জযম/সাকিন থাকলে উচ্চারণের সময় ধাক্কা বা প্রতিধ্বনি দিয়ে পড়তে হয়।
+          </p>
+          <div style="display:flex; flex-wrap:wrap; gap:10px; direction:rtl;" id="qalqalahGrid"></div>
+        </div>
+
+        <div class="exam-box">
+          <h3 style="margin: 0 0 6px; color: var(--primary);">🔔 তাশদীদ (ـّ) ও গুন্নাহ (নাকের বাঁশি থেকে উচ্চারণ)</h3>
+          <p style="margin: 0 0 12px; font-size: 0.88rem; color: var(--text-muted);">
+            তাশদীদযুক্ত হরফ দুইবার পড়া হয়। বিশেষ করে নূন (نّ) ও মীম (مّ) তাশদীদে ১ আলিফ পরিমাণ গুন্নাহ করা ওয়াজিব।
+          </p>
+          <div style="display:flex; flex-wrap:wrap; gap:10px; direction:rtl;" id="tashdeedGrid"></div>
+        </div>
       </div>
 
-      <div class="exam-box">
-        <h3 style="margin: 0 0 6px; color: var(--primary);">🔔 তাশদীদ (ـّ) ও গুন্নাহ (নাকের বাঁশি থেকে উচ্চারণ)</h3>
-        <p style="margin: 0 0 12px; font-size: 0.88rem; color: var(--text-muted);">
-          তাশদীদযুক্ত হরফ দুইবার পড়া হয়। বিশেষ করে নূন (نّ) ও মীম (مّ) তাশদীদে ১ আলিফ পরিমাণ গুন্নাহ করা ওয়াজিব।
-        </p>
-        <div style="display:flex; flex-wrap:wrap; gap:10px; direction:rtl;" id="tashdeedGrid"></div>
+      <div id="h-surah" class="harakat-subview" style="display:none;">
+        <div id="surahContainer"></div>
       </div>
     </section>
 
@@ -222,34 +251,34 @@
             যেকোনো অংশে ক্লিক করলে সেই স্থানের মাখরাজগুলো দেখাবে।
           </p>
 
-          <svg viewBox="0 0 320 340" width="100%" aria-label="মাখরাজের অঙ্গসমূহের চিত্র">
-            <path d="M90,320 L90,260 C70,245 55,220 55,180 C55,105 110,45 185,45 C250,45 275,95 275,145 L288,168 L272,178 L275,198 L258,205 L265,220 L255,232 C245,248 220,255 190,258 L190,320"
+          <svg viewBox="0 0 320 350" width="100%" aria-label="মাখরাজের অঙ্গসমূহের চিত্র">
+            <path d="M90,330 L90,265 C70,250 55,225 55,182 C55,105 110,45 185,45 C250,45 275,95 275,145 L288,168 L272,178 L275,198 L258,205 L265,220 L255,232 C245,248 220,255 190,258 L190,330"
                   fill="rgba(255,255,255,0.45)" stroke="var(--border)" stroke-width="3" />
             <g class="svg-zone" data-region="nasal">
-              <path d="M185,125 C215,118 245,130 265,158 C240,165 205,160 185,148 Z"
+              <path d="M185,112 C215,105 245,118 265,146 C240,153 205,148 185,136 Z"
                     fill="#fef3c7" stroke="#b8860b" stroke-width="2" />
-              <text x="215" y="145" font-size="11" font-weight="700" fill="#78350f" text-anchor="middle">নাক (১৭)</text>
+              <text x="217" y="133" font-size="10.5" font-weight="700" fill="#78350f" text-anchor="middle">নাক (১৭)</text>
             </g>
             <g class="svg-zone" data-region="jawf">
-              <ellipse cx="195" cy="185" rx="46" ry="22" fill="#e0f2fe" stroke="#0284c7" stroke-width="2" stroke-dasharray="4 2" />
-              <text x="195" y="182" font-size="10.5" font-weight="700" fill="#0369a1" text-anchor="middle">মুখের খালী</text>
-              <text x="195" y="195" font-size="10" fill="#0369a1" text-anchor="middle">জায়গা (১৬)</text>
+              <ellipse cx="195" cy="173" rx="48" ry="20" fill="#e0f2fe" stroke="#0284c7" stroke-width="2" stroke-dasharray="4 2" />
+              <text x="195" y="170" font-size="10" font-weight="700" fill="#0369a1" text-anchor="middle">মুখের খালী</text>
+              <text x="195" y="182" font-size="9.5" fill="#0369a1" text-anchor="middle">জায়গা (১৬)</text>
             </g>
             <g class="svg-zone" data-region="throat">
-              <rect x="118" y="210" width="48" height="96" rx="14" fill="#dcfce7" stroke="#0f5132" stroke-width="2" />
-              <text x="142" y="232" font-size="10.5" font-weight="700" fill="#0f5132" text-anchor="middle">হলকের শেষ (৩)</text>
-              <text x="142" y="260" font-size="10.5" font-weight="700" fill="#0f5132" text-anchor="middle">মধ্যখান (২)</text>
-              <text x="142" y="290" font-size="10.5" font-weight="700" fill="#0f5132" text-anchor="middle">শুরু (১)</text>
+              <rect x="110" y="218" width="60" height="98" rx="14" fill="#dcfce7" stroke="#0f5132" stroke-width="2" />
+              <text x="140" y="240" font-size="9.5" font-weight="700" fill="#0f5132" text-anchor="middle">হলকের শেষ (৩)</text>
+              <text x="140" y="268" font-size="9.5" font-weight="700" fill="#0f5132" text-anchor="middle">মধ্যখান (২)</text>
+              <text x="140" y="296" font-size="9.5" font-weight="700" fill="#0f5132" text-anchor="middle">শুরু (১)</text>
             </g>
             <g class="svg-zone" data-region="tongue">
-              <path d="M150,210 C155,180 185,172 225,185 C235,188 242,198 228,208 C205,216 175,218 150,210 Z"
+              <path d="M158,214 C168,195 198,193 228,200 C238,203 242,213 228,223 C205,230 175,228 158,214 Z"
                     fill="#fce7f3" stroke="#be185d" stroke-width="2" />
-              <text x="193" y="203" font-size="11" font-weight="700" fill="#9d174d" text-anchor="middle">জিহ্বা (৪–১৩)</text>
+              <text x="198" y="214" font-size="10.5" font-weight="700" fill="#9d174d" text-anchor="middle">জিহ্বা (৪–১৩)</text>
             </g>
             <g class="svg-zone" data-region="lips">
-              <circle cx="258" cy="195" r="18" fill="#ede9fe" stroke="#6d28d9" stroke-width="2" />
-              <text x="258" y="193" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">ঠোঁট</text>
-              <text x="258" y="204" font-size="9.5" fill="#5b21b6" text-anchor="middle">(১৪, ১৫)</text>
+              <circle cx="262" cy="196" r="19" fill="#ede9fe" stroke="#6d28d9" stroke-width="2" />
+              <text x="262" y="194" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">ঠোঁট</text>
+              <text x="262" y="205" font-size="9" fill="#5b21b6" text-anchor="middle">(১৪, ১৫)</text>
             </g>
           </svg>
 
@@ -374,6 +403,98 @@
       <span class="bnav-label">পরীক্ষা</span>
     </button>
   </nav>
+
+  <!-- Settings Modal -->
+  <div class="modal-backdrop" id="settingsBackdrop"></div>
+  <section class="settings-modal" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="settings-header">
+      <h2 id="settingsTitle" style="margin:0; font-size:1.15rem; color:var(--primary);">⚙️ অ্যাপ সেটিংস ও কন্ট্রোল</h2>
+      <button class="sheet-close-btn" id="settingsCloseBtn" type="button" aria-label="বন্ধ করুন" style="display:inline-grid;">✕</button>
+    </div>
+
+    <div class="settings-list">
+      <label class="setting-row">
+        <div>
+          <strong>🎯 মনোযোগ মোড (Focus Mode)</strong>
+          <span>পড়ার সময় বাড়তি ব্যাজ ও ব্যানার ঝাপসা রাখবে</span>
+        </div>
+        <input type="checkbox" class="ios-switch" id="setFocusToggle" />
+      </label>
+
+      <label class="setting-row">
+        <div>
+          <strong>🌙 রাত মোড (Dark Theme)</strong>
+          <span>রাতের বেলা চোখের আরামের জন্য ডার্ক গ্লাস থিম</span>
+        </div>
+        <input type="checkbox" class="ios-switch" id="setDarkToggle" />
+      </label>
+
+      <label class="setting-row">
+        <div>
+          <strong>👁️ বাংলা নাম দেখান</strong>
+          <span>বর্ণমালা গ্রিডে আরবির নিচে বাংলা উচ্চারণ দেখাবে (নিজেকে যাচাই করতে অফ করুন)</span>
+        </div>
+        <input type="checkbox" class="ios-switch" id="setBnNamesToggle" checked />
+      </label>
+
+      <label class="setting-row">
+        <div>
+          <strong>🏷️ মাখরাজ ব্যাজ দেখান</strong>
+          <span>হরফের কার্ডে মাখরাজ নাম্বার দেখাবে</span>
+        </div>
+        <input type="checkbox" class="ios-switch" id="setMakhrajBadgeToggle" checked />
+      </label>
+
+      <label class="setting-row">
+        <div>
+          <strong>🎙️ অটো-স্টপ ভয়েস রেকর্ডার</strong>
+          <span>বলা শেষ হলেই রেকর্ডিং স্বয়ংক্রিয়ভাবে থেমে যাবে</span>
+        </div>
+        <input type="checkbox" class="ios-switch" id="setAutoStopToggle" checked />
+      </label>
+
+      <label class="setting-row">
+        <div>
+          <strong>🔊 কুইজ সাউন্ড ইফেক্ট</strong>
+          <span>সঠিক বা ভুল উত্তরে মৃদু টোন শোনাবে</span>
+        </div>
+        <input type="checkbox" class="ios-switch" id="setSoundFxToggle" checked />
+      </label>
+
+      <label class="setting-row">
+        <div>
+          <strong>📳 হ্যাপটিক ভাইব্রেশন</strong>
+          <span>মোবাইলে কুইজ ও বাটনে হালকা ভাইব্রেশন দেবে</span>
+        </div>
+        <input type="checkbox" class="ios-switch" id="setHapticToggle" checked />
+      </label>
+
+      <div class="setting-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong>🔤 আরবি অক্ষরের আকার (Font Size)</strong>
+          <span id="fontScaleLabel" style="font-weight:700; color:var(--primary);">১০০%</span>
+        </div>
+        <input type="range" id="setFontScale" min="0.85" max="1.35" step="0.05" value="1" style="width:100%; accent-color:var(--primary);" />
+      </div>
+
+      <div class="setting-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+        <strong>💾 অগ্রগতি ব্যাকআপ ও রিস্টোর</strong>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-primary" id="exportDataBtn" type="button" style="flex:1; justify-content:center;">⬇️ ব্যাকআপ সেভ</button>
+          <label class="btn btn-gold" style="flex:1; justify-content:center; cursor:pointer;">
+            ⬆️ রিস্টোর করুন
+            <input type="file" id="importDataInput" accept=".json" style="display:none;" />
+          </label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PWA Update Toast -->
+  <div class="update-toast" id="updateToast" role="status" aria-live="polite">
+    <span>✨ নতুন আপডেট প্রস্তুত!</span>
+    <button class="btn btn-primary" id="reloadAppBtn" type="button" style="padding:4px 12px; font-size:0.8rem;">রিফ্রেশ</button>
+  </div>
 
   <script src="data.js"></script>
   <script src="app.js"></script>

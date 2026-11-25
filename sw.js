@@ -1,4 +1,4 @@
-const CACHE_NAME = "madani-qaida-v5";
+const CACHE_NAME = "madani-qaida-v6";
 const ASSETS = [
   "./",
   "./index.html",
@@ -163,5 +163,27 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request)));
+  const url = new URL(event.request.url);
+  const isStaticMedia = url.pathname.includes("/audio/") || url.pathname.includes("/icons/");
+
+  if (isStaticMedia) {
+    // Cache-first for MP3s and icons
+    event.respondWith(
+      caches.match(event.request).then((cached) => cached || fetch(event.request))
+    );
+    return;
+  }
+
+  // Network-first for HTML/CSS/JS so updates appear immediately when online, with offline fallback
+  event.respondWith(
+    fetch(event.request)
+      .then((res) => {
+        if (res && res.status === 200 && event.request.method === "GET") {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        }
+        return res;
+      })
+      .catch(() => caches.match(event.request))
+  );
 });

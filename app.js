@@ -1063,9 +1063,17 @@
     }
   });
 
-  // Register Service Worker & PWA Install Prompt
+  // Register Service Worker & auto-refresh when a new version activates
   if ("serviceWorker" in navigator && (location.protocol === "http:" || location.protocol === "https:")) {
-    navigator.serviceWorker.register("sw.js").catch(() => {});
+    let swRefreshing = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (swRefreshing) return;
+      swRefreshing = true;
+      window.location.reload();
+    });
+    navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then((reg) => {
+      reg.update().catch(() => {});
+    }).catch(() => {});
   }
 
   let deferredInstallPrompt = null;

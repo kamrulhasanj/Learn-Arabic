@@ -212,6 +212,10 @@
   document.getElementById("settingsBtn").addEventListener("click", openSettings);
   document.getElementById("settingsCloseBtn").addEventListener("click", closeSettings);
   settingsBackdrop.addEventListener("click", closeSettings);
+  document.getElementById("focusExitBtn").addEventListener("click", () => {
+    settings.focusMode = false;
+    applySettings();
+  });
 
   setFocusToggle.addEventListener("change", () => { settings.focusMode = setFocusToggle.checked; applySettings(); });
   setDarkToggle.addEventListener("change", () => { settings.darkTheme = setDarkToggle.checked; applySettings(); });

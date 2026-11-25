@@ -111,7 +111,7 @@
   }
 
   function updateWeakBtnUI() {
-    document.getElementById("weakModeBtn").textContent = `⚠️ দুর্বল হরফ (${toBnNum(weakSet.size)})`;
+    document.getElementById("weakModeBtn").textContent = `⚠️ দুর্বল (${toBnNum(weakSet.size)})`;
   }
 
   // Settings State & Helpers
@@ -1138,6 +1138,9 @@
   });
   document.getElementById("tracePlayBtn").addEventListener("click", () => playLetter(LETTERS[traceIndex]));
   document.getElementById("traceClearBtn").addEventListener("click", clearTraceCanvas);
+  document.getElementById("traceGuideToggleBtn").addEventListener("click", () => {
+    document.getElementById("traceGuide").classList.toggle("hidden");
+  });
 
   // Smart Quiz
   function shuffle(arr) {
@@ -1152,7 +1155,7 @@
   function updateQuizScoreUI() {
     document.getElementById("quizScore").textContent = toBnNum(quizScore);
     document.getElementById("quizTotal").textContent = toBnNum(quizTotal);
-    document.getElementById("quizStreak").textContent = `ধারাবাহিক সঠিক: ${toBnNum(quizStreak)}`;
+    document.getElementById("quizStreak").textContent = `🔥 ধারাবাহিক: ${toBnNum(quizStreak)}`;
   }
 
   function generateQuizQuestion(shouldPlay = true) {
@@ -1179,6 +1182,7 @@
     const promptBox = document.getElementById("quizPromptBox");
     const optionsBox = document.getElementById("quizOptions");
     optionsBox.innerHTML = "";
+    optionsBox.classList.toggle("list-mode", quizMode === "makhraj");
 
     if (quizMode === "audio" || quizMode === "weak") {
       promptBox.innerHTML = `

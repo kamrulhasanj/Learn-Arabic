@@ -1534,3 +1534,119 @@ body.hide-makhraj-badges .card-makhraj-badge {
   pointer-events: auto;
   transform: translateX(-50%) translateY(0);
 }
+
+/* =========================================================
+   MOBILE PRACTICE / QUIZ UPGRADES
+   ========================================================= */
+.quiz-stats-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.quiz-stat-pill {
+  background: var(--glass-subtle);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.quiz-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.tracing-guide {
+  transition: opacity 0.2s ease;
+}
+
+.tracing-guide.hidden {
+  opacity: 0;
+}
+
+.quiz-options.list-mode {
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 768px) {
+  .practice-subtabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    background: var(--glass);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 5px;
+    margin-bottom: 12px;
+  }
+
+  .practice-subtabs .btn {
+    justify-content: center;
+    padding: 8px 6px;
+    font-size: 0.82rem;
+    border-radius: 11px;
+    border-color: transparent;
+    background: transparent;
+  }
+
+  .practice-subtabs .btn.btn-primary {
+    background: var(--primary-solid, var(--primary));
+    color: #fff;
+  }
+
+  .quiz-card {
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .quiz-modes {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .quiz-modes .btn {
+    justify-content: center;
+    padding: 8px 6px;
+    font-size: 0.8rem;
+  }
+
+  .quiz-prompt-box {
+    padding: 14px 12px;
+    margin: 10px 0 12px;
+  }
+
+  .quiz-options {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .quiz-opt-btn {
+    padding: 12px 8px;
+    min-height: 68px;
+  }
+
+  .quiz-actions #nextQuizBtn {
+    flex: 1 1 auto;
+    min-height: 46px;
+    justify-content: center;
+  }
+
+  .tracing-wrap {
+    padding: 14px;
+  }
+
+  .tracing-canvas-box {
+    height: 240px;
+  }
+}

@@ -298,39 +298,34 @@
 
     <!-- TAB 5: অনুশীলন ও পরীক্ষা -->
     <section class="tab-panel" id="panel-quiz">
-      <div class="practice-subtabs" style="justify-content:center;">
-        <button class="btn btn-primary practice-view-btn active" data-view="quiz-view" type="button">🎯 স্মার্ট কুইজ ও দুর্বল হরফ</button>
-        <button class="btn practice-view-btn" data-view="pairs-view" type="button">⚖️ কাছাকাছি হরফের ড্রিল</button>
-        <button class="btn practice-view-btn" data-view="trace-view" type="button">✍️ হাতে লিখে প্র্যাকটিস</button>
+      <div class="practice-subtabs">
+        <button class="btn btn-primary practice-view-btn active" data-view="quiz-view" type="button">🎯 কুইজ</button>
+        <button class="btn practice-view-btn" data-view="pairs-view" type="button">⚖️ পার্থক্য</button>
+        <button class="btn practice-view-btn" data-view="trace-view" type="button">✍️ হাতে লেখা</button>
       </div>
 
       <!-- Sub-view 1: Smart Quiz -->
       <div id="quiz-view" class="practice-subview">
         <div class="quiz-card">
-          <h2 style="margin: 0 0 6px; color: var(--primary);">স্মার্ট অনুশীলন ও পরীক্ষা</h2>
-          <p style="margin: 0 0 14px; color: var(--text-muted); font-size: 0.9rem;">
-            ভুল হওয়া হরফগুলো স্বয়ংক্রিয়ভাবে সেভ থাকে যাতে পরে সেগুলো আলাদাভাবে অনুশীলন করতে পারেন।
-          </p>
+          <div class="quiz-stats-bar">
+            <span class="quiz-stat-pill">স্কোর: <strong id="quizScore">০</strong> / <strong id="quizTotal">০</strong></span>
+            <span class="quiz-stat-pill" id="quizStreak">🔥 ধারাবাহিক: ০</span>
+          </div>
 
           <div class="quiz-modes">
             <button class="btn btn-primary quiz-mode-btn active" data-mode="audio" type="button">🔊 উচ্চারণ শুনে</button>
             <button class="btn quiz-mode-btn" data-mode="murakkab" type="button">🔗 মুরাক্কাব রূপ</button>
             <button class="btn quiz-mode-btn" data-mode="makhraj" type="button">🗣️ মাখরাজ</button>
-            <button class="btn btn-gold quiz-mode-btn" data-mode="weak" type="button" id="weakModeBtn">⚠️ দুর্বল হরফ (০)</button>
-          </div>
-
-          <div style="display: flex; justify-content: space-between; font-weight: 600; font-size: 0.9rem;">
-            <span>স্কোর: <span id="quizScore">০</span> / <span id="quizTotal">০</span></span>
-            <span id="quizStreak">ধারাবাহিক সঠিক: ০</span>
+            <button class="btn btn-gold quiz-mode-btn" data-mode="weak" type="button" id="weakModeBtn">⚠️ দুর্বল (০)</button>
           </div>
 
           <div class="quiz-prompt-box" id="quizPromptBox"></div>
           <div class="quiz-options" id="quizOptions"></div>
-          <div id="quizFeedback" style="margin-top: 14px; font-weight: 600; min-height: 1.5em;"></div>
+          <div id="quizFeedback" style="margin-top: 12px; font-weight: 600; min-height: 1.5em;"></div>
 
-          <div style="display:flex; justify-content:center; gap:8px; margin-top:10px; flex-wrap:wrap;">
+          <div class="quiz-actions">
             <button class="btn btn-primary" id="nextQuizBtn" type="button">পরবর্তী প্রশ্ন ➡</button>
-            <button class="btn" id="clearWeakBtn" type="button" style="font-size:0.82rem;">দুর্বল তালিকা মুছুন</button>
+            <button class="btn" id="clearWeakBtn" type="button" style="font-size:0.82rem;">দুর্বল মুছুন</button>
           </div>
         </div>
       </div>
@@ -368,7 +363,8 @@
             <canvas id="traceCanvas" width="380" height="280"></canvas>
           </div>
 
-          <div style="display:flex; justify-content:center; gap:8px;">
+          <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap;">
+            <button class="btn" id="traceGuideToggleBtn" type="button">👁️ গাইড</button>
             <button class="btn btn-danger" id="traceClearBtn" type="button">🗑️ মুছুন</button>
           </div>
         </div>

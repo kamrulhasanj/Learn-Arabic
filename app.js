@@ -2289,7 +2289,7 @@
     }).catch(() => {});
   }
 
-  let deferredInstallPrompt = null;
+  let deferredInstallPrompt = window.__pwaInstallPrompt || null;
   const headerInstallBtn = document.getElementById("headerInstallBtn");
   const installAppBtn = document.getElementById("installAppBtn");
   const installAppRow = document.getElementById("installAppRow");
@@ -2297,47 +2297,115 @@
   const installBannerSub = document.getElementById("installBannerSub");
   const bannerInstallBtn = document.getElementById("bannerInstallBtn");
   const bannerDismissBtn = document.getElementById("bannerDismissBtn");
+  const pwaGuideModal = document.getElementById("pwaGuideModal");
+  const pwaGuideCloseBtn = document.getElementById("pwaGuideCloseBtn");
+  const pwaGuideSteps = document.getElementById("pwaGuideSteps");
+  const pwaGuideIntro = document.getElementById("pwaGuideIntro");
 
   const isStandalone =
     window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
-  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
-  if (isStandalone && headerInstallBtn) {
-    headerInstallBtn.style.display = "none";
+  function hideInstallUI() {
+    if (headerInstallBtn) headerInstallBtn.style.display = "none";
+    if (installAppRow) installAppRow.style.display = "none";
+    if (installBanner) installBanner.classList.remove("show");
+    if (pwaGuideModal) pwaGuideModal.classList.remove("open");
+  }
+
+  function showInstallUI() {
+    if (headerInstallBtn) headerInstallBtn.style.display = "inline-flex";
+    if (installAppRow) installAppRow.style.display = "flex";
+  }
+
+  function openPwaGuideModal() {
+    if (!pwaGuideModal || !pwaGuideSteps) return;
+    if (isIos) {
+      pwaGuideIntro.textContent = "iPhone / iPad Safari-তে অ্যাপটি ইনস্টল করতে নিচের ২টি ধাপ অনুসরণ করুন:";
+      pwaGuideSteps.innerHTML = `
+        <div class="pwa-guide-step">
+          <span class="pwa-guide-icon">⬆️</span>
+          <div><strong>১. Share বাটনে ট্যাপ করুন</strong><div style="font-size:0.8rem; color:var(--text-muted);">Safari ব্রাউজারের নিচে বা উপরে থাকা Share (⬆️) আইকনে চাপ দিন।</div></div>
+        </div>
+        <div class="pwa-guide-step">
+          <span class="pwa-guide-icon">➕</span>
+          <div><strong>২. Add to Home Screen</strong><div style="font-size:0.8rem; color:var(--text-muted);">তালিকা থেকে <em>'Add to Home Screen'</em> সিলেক্ট করে <em>'Add'</em> চাপুন।</div></div>
+        </div>
+      `;
+    } else {
+      pwaGuideIntro.textContent = "এই ব্রাউজারে সরাসরি ইনস্টল করতে নিচের ধাপ অনুসরণ করুন:";
+      pwaGuideSteps.innerHTML = `
+        <div class="pwa-guide-step">
+          <span class="pwa-guide-icon">⋮</span>
+          <div><strong>১. ব্রাউজার মেনু বা অ্যাড্রেস বার খুলুন</strong><div style="font-size:0.8rem; color:var(--text-muted);">উপরে ডানদিকে অ্যাড্রেস বারের ⊕/📲 আইকন বা মেনু (⋮) চাপুন।</div></div>
+        </div>
+        <div class="pwa-guide-step">
+          <span class="pwa-guide-icon">📲</span>
+          <div><strong>২. Install Learn Arabic সিলেক্ট করুন</strong><div style="font-size:0.8rem; color:var(--text-muted);"><em>'Install app'</em> বা <em>'Add to Home Screen'</em> চাপলেই অফলাইন অ্যাপ হিসেবে যুক্ত হবে।</div></div>
+        </div>
+      `;
+    }
+    pwaGuideModal.classList.add("open");
+  }
+
+  async function syncPwaInstallVisibility() {
+    if (isStandalone) {
+      hideInstallUI();
+      return;
+    }
+    if (deferredInstallPrompt) {
+      localStorage.removeItem("madani_pwa_installed");
+      showInstallUI();
+      if (!sessionStorage.getItem("madani_install_dismissed") && installBanner) {
+        installBanner.classList.add("show");
+      }
+      return;
+    }
+    if (navigator.getInstalledRelatedApps) {
+      try {
+        const apps = await navigator.getInstalledRelatedApps();
+        if (apps && apps.length > 0) {
+          localStorage.setItem("madani_pwa_installed", "1");
+          hideInstallUI();
+          return;
+        }
+      } catch {}
+    }
+    if (localStorage.getItem("madani_pwa_installed") === "1") {
+      hideInstallUI();
+      return;
+    }
+    showInstallUI();
   }
 
   async function triggerPwaInstall() {
-    if (deferredInstallPrompt) {
-      deferredInstallPrompt.prompt();
-      const choice = await deferredInstallPrompt.userChoice;
-      deferredInstallPrompt = null;
+    const promptEvt = deferredInstallPrompt || window.__pwaInstallPrompt;
+    if (promptEvt) {
+      deferredInstallPrompt = promptEvt;
+      promptEvt.prompt();
+      const choice = await promptEvt.userChoice;
       if (choice && choice.outcome === "accepted") {
-        if (headerInstallBtn) headerInstallBtn.style.display = "none";
-        if (installAppRow) installAppRow.style.display = "none";
-        if (installBanner) installBanner.classList.remove("show");
+        deferredInstallPrompt = null;
+        window.__pwaInstallPrompt = null;
+        localStorage.setItem("madani_pwa_installed", "1");
+        hideInstallUI();
       }
-    } else if (isIos) {
-      if (installBannerSub) {
-        installBannerSub.textContent = "Safari-এর নিচে Share (⬆️) আইকনে ট্যাপ করে 'Add to Home Screen' সিলেক্ট করুন।";
-      }
-      if (bannerInstallBtn) bannerInstallBtn.style.display = "none";
-      if (installBanner) installBanner.classList.add("show");
-    } else if (installBanner) {
-      if (installBannerSub) {
-        installBannerSub.textContent = "ব্রাউজারের অ্যাড্রেস বার বা মেনু (⋮) থেকে 'Install Learn Arabic' / 'Add to Home Screen' সিলেক্ট করুন।";
-      }
-      if (bannerInstallBtn) bannerInstallBtn.style.display = "none";
-      installBanner.classList.add("show");
+    } else {
+      openPwaGuideModal();
     }
   }
 
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferredInstallPrompt = e;
-    if (headerInstallBtn && !isStandalone) headerInstallBtn.style.display = "inline-flex";
-    if (installAppRow) installAppRow.style.display = "flex";
-    if (!isStandalone && !sessionStorage.getItem("madani_install_dismissed")) {
-      installBanner.classList.add("show");
+    window.__pwaInstallPrompt = e;
+    localStorage.removeItem("madani_pwa_installed");
+    if (!isStandalone) {
+      showInstallUI();
+      if (!sessionStorage.getItem("madani_install_dismissed") && installBanner) {
+        installBanner.classList.add("show");
+      }
     }
   });
 
@@ -2347,6 +2415,8 @@
     setTimeout(() => installBanner.classList.add("show"), 1200);
   }
 
+  syncPwaInstallVisibility();
+
   if (headerInstallBtn) headerInstallBtn.addEventListener("click", triggerPwaInstall);
   installAppBtn.addEventListener("click", triggerPwaInstall);
   bannerInstallBtn.addEventListener("click", triggerPwaInstall);
@@ -2354,11 +2424,20 @@
     installBanner.classList.remove("show");
     sessionStorage.setItem("madani_install_dismissed", "1");
   });
+  if (pwaGuideCloseBtn) {
+    pwaGuideCloseBtn.addEventListener("click", () => pwaGuideModal.classList.remove("open"));
+  }
+  if (pwaGuideModal) {
+    pwaGuideModal.addEventListener("click", (e) => {
+      if (e.target === pwaGuideModal) pwaGuideModal.classList.remove("open");
+    });
+  }
 
   window.addEventListener("appinstalled", () => {
-    if (headerInstallBtn) headerInstallBtn.style.display = "none";
-    if (installAppRow) installAppRow.style.display = "none";
-    if (installBanner) installBanner.classList.remove("show");
+    deferredInstallPrompt = null;
+    window.__pwaInstallPrompt = null;
+    localStorage.setItem("madani_pwa_installed", "1");
+    hideInstallUI();
   });
 
   // Interactive Spotlight Coachmark App Tour

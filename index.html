@@ -13,6 +13,13 @@
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="styles.css" />
+  <script>
+    window.__pwaInstallPrompt = null;
+    window.addEventListener("beforeinstallprompt", function (e) {
+      e.preventDefault();
+      window.__pwaInstallPrompt = e;
+    });
+  </script>
 </head>
 <body>
   <div class="top-taawudh-bar ar" role="banner">
@@ -593,7 +600,7 @@
 
       <div class="dev-credit-box">
         <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:4px;">
-          Learn Arabic PWA • বর্তমান ভার্সন: <strong id="appVersionBadge">1.1.1</strong>
+          Learn Arabic PWA • বর্তমান ভার্সন: <strong id="appVersionBadge">1.1.12</strong>
         </div>
         <div style="font-size:0.88rem; font-weight:600;">
           Develop With <span style="color:#e11d48;" aria-label="love">❤️</span> by <strong>Kamrul Hasan</strong>
@@ -655,6 +662,25 @@
       <button class="sheet-close-btn" id="bannerDismissBtn" type="button" aria-label="বন্ধ করুন" style="display:inline-grid; width:28px; height:28px; font-size:0.8rem;">✕</button>
     </div>
   </div>
+
+  <!-- PWA Visual Install Guide Modal (for iOS/iPadOS Safari & fallback browsers) -->
+  <section class="modal-overlay" id="pwaGuideModal" role="dialog" aria-modal="true" aria-labelledby="pwaGuideTitle">
+    <div class="modal-card" style="max-width:420px;">
+      <div class="modal-head">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <img src="icons/logo.svg" alt="" style="width:32px; height:32px; border-radius:8px;" />
+          <h2 id="pwaGuideTitle" style="margin:0; font-size:1.05rem;">📲 Learn Arabic ইনস্টল করুন</h2>
+        </div>
+        <button class="sheet-close-btn" id="pwaGuideCloseBtn" type="button" aria-label="বন্ধ করুন" style="display:inline-grid;">✕</button>
+      </div>
+      <div class="modal-body">
+        <p id="pwaGuideIntro" style="margin:0 0 12px; font-size:0.86rem; color:var(--text-muted);">
+          অ্যাপটি অফলাইনে দ্রুত ব্যবহার করতে হোম স্ক্রিনে যোগ করুন:
+        </p>
+        <div class="pwa-guide-steps" id="pwaGuideSteps"></div>
+      </div>
+    </div>
+  </section>
 
   <!-- PWA Update Toast -->
   <div class="update-toast" id="updateToast" role="status" aria-live="polite">

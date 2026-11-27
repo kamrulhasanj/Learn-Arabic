@@ -1,4 +1,4 @@
-const CACHE_NAME = "learn-arabic-v1.1.13";
+const CACHE_NAME = "learn-arabic-v1.1.14";
 const ASSETS = [
   "./",
   "./index.html",
@@ -9,6 +9,8 @@ const ASSETS = [
   "./app.js",
   "./manifest.json",
   "./fonts/Amiri-Regular.woff2",
+  "./fonts/Lateef-Regular.woff2",
+  "./fonts/NotoNaskhArabic-Regular.woff2",
   "./fonts/ScheherazadeNew-Regular.woff2",
   "./icons/apple-touch-icon.png",
   "./icons/favicon-32.png",

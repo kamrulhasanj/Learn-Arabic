@@ -1404,9 +1404,9 @@ body.hide-makhraj-badges .card-makhraj-badge {
 .settings-modal {
   display: none;
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
+  margin: auto;
+  height: fit-content;
   z-index: 130;
   width: min(92vw, 460px);
   max-height: 85vh;

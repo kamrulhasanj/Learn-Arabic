@@ -1,4 +1,4 @@
-const CACHE_NAME = "learn-arabic-v1.1.16";
+const CACHE_NAME = "learn-arabic-v1.1.17";
 const ASSETS = [
   "./",
   "./index.html",
@@ -446,8 +446,21 @@ const ASSETS = [
   "./audio/w_shakara.mp3"
 ];
 
+const CORE_ASSETS = ASSETS.filter((u) => !u.startsWith("./audio/"));
+const AUDIO_ASSETS = ASSETS.filter((u) => u.startsWith("./audio/"));
+
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
+  event.waitUntil(
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+      await cache.addAll(CORE_ASSETS);
+      const BATCH_SIZE = 20;
+      for (let i = 0; i < AUDIO_ASSETS.length; i += BATCH_SIZE) {
+        const batch = AUDIO_ASSETS.slice(i, i + BATCH_SIZE);
+        await Promise.allSettled(batch.map((url) => cache.add(url)));
+      }
+    })()
+  );
   self.skipWaiting();
 });
 
@@ -461,25 +474,55 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+  if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
-  const isStaticMedia = url.pathname.includes("/audio/") || url.pathname.includes("/icons/");
+  if (url.origin !== self.location.origin) return;
+
+  const isStaticMedia =
+    url.pathname.includes("/audio/") ||
+    url.pathname.includes("/icons/") ||
+    url.pathname.includes("/fonts/");
 
   if (isStaticMedia) {
     event.respondWith(
-      caches.match(event.request).then((cached) => cached || fetch(event.request))
+      caches.match(event.request, { ignoreSearch: true }).then((cached) => {
+        if (cached) return cached;
+        return fetch(event.request).then((res) => {
+          if (res && res.status === 200) {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+          }
+          return res;
+        });
+      })
     );
     return;
   }
 
+  // App Shell (HTML, CSS, JS, JSON): Stale-While-Revalidate for instant offline load + background updates
   event.respondWith(
-    fetch(event.request)
-      .then((res) => {
-        if (res && res.status === 200 && event.request.method === "GET") {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+    caches.match(event.request, { ignoreSearch: true }).then((cached) => {
+      const networkFetch = fetch(event.request)
+        .then((res) => {
+          if (res && res.status === 200) {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+          }
+          return res;
+        })
+        .catch(() => null);
+
+      if (cached) {
+        return cached;
+      }
+
+      return networkFetch.then((res) => {
+        if (res) return res;
+        if (event.request.mode === "navigate") {
+          return caches.match("./index.html", { ignoreSearch: true }) || caches.match("./");
         }
-        return res;
-      })
-      .catch(() => caches.match(event.request))
+        return Response.error();
+      });
+    })
   );
 });

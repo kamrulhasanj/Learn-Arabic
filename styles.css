@@ -2219,11 +2219,15 @@ body.tajweed-colors[data-theme="dark"] .tj-heavy { color: #a78bfa; }
 }
 
 .font-pick-sample {
-  font-size: 1.35rem;
-  line-height: 1.6;
+  font-size: 1.85rem;
+  line-height: 1.75;
   direction: rtl;
   color: var(--primary);
-  margin-top: 2px;
+  margin-top: 4px;
+}
+
+.font-pick-sample--lateef {
+  font-size: 2.15rem;
 }
 
 .footer-update-btn {

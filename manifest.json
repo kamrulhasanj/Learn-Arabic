@@ -1,6 +1,6 @@
 {
   "id": "./",
-  "version": "1.1.11",
+  "version": "1.1.12",
   "name": "Learn Arabic",
   "short_name": "Learn Arabic",
   "description": "নন-এরাবিক শিক্ষার্থীদের জন্য সম্পূর্ণ অফলাইন আরবি বর্ণমালা, মুরাক্কাব, হরকত, ১৭টি মাখরাজ এবং স্মার্ট অনুশীলন অ্যাপ।",
@@ -17,13 +17,25 @@
       "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "icons/logo.svg",

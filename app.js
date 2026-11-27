@@ -131,6 +131,7 @@
     haptic: true,
     tajweedColors: true,
     fontScale: 1.0,
+    arabicFont: "Amiri",
   };
   let settings = { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem("madani_settings") || "{}") };
 
@@ -146,6 +147,8 @@
   const setTajweedColorToggle = document.getElementById("setTajweedColorToggle");
   const setFontScale = document.getElementById("setFontScale");
   const fontScaleLabel = document.getElementById("fontScaleLabel");
+  const setArabicFont = document.getElementById("setArabicFont");
+  const arabicFontLabel = document.getElementById("arabicFontLabel");
 
   function applySettings() {
     localStorage.setItem("madani_settings", JSON.stringify(settings));
@@ -155,6 +158,13 @@
     document.body.classList.toggle("hide-makhraj-badges", !settings.showMakhrajBadges);
     document.body.classList.toggle("tajweed-colors", settings.tajweedColors);
     document.documentElement.style.setProperty("--ar-scale", String(settings.fontScale));
+    const chosenFont = settings.arabicFont === "Scheherazade New" ? "Scheherazade New" : "Amiri";
+    const fontStack = chosenFont === "Scheherazade New"
+      ? "'Scheherazade New', 'Amiri', 'Geeza Pro', serif"
+      : "'Amiri', 'Scheherazade New', 'Geeza Pro', serif";
+    document.documentElement.style.setProperty("--font-ar-word", fontStack);
+    if (setArabicFont) setArabicFont.value = chosenFont;
+    if (arabicFontLabel) arabicFontLabel.textContent = chosenFont;
 
     if (settings.darkTheme) {
       document.documentElement.setAttribute("data-theme", "dark");
@@ -238,6 +248,12 @@
   setHapticToggle.addEventListener("change", () => { settings.haptic = setHapticToggle.checked; applySettings(); });
   setTajweedColorToggle.addEventListener("change", () => { settings.tajweedColors = setTajweedColorToggle.checked; applySettings(); });
   setFontScale.addEventListener("input", () => { settings.fontScale = Number(setFontScale.value); applySettings(); });
+  if (setArabicFont) {
+    setArabicFont.addEventListener("change", () => {
+      settings.arabicFont = setArabicFont.value;
+      applySettings();
+    });
+  }
 
   // Export & Import Backup
   document.getElementById("exportDataBtn").addEventListener("click", () => {
@@ -898,7 +914,7 @@
       btn.className = "btn";
       btn.style.flexDirection = "column";
       btn.style.padding = "10px 14px";
-      btn.innerHTML = `<span class="ar" style="font-size:2rem; color:var(--primary);">${tw.text}</span><span style="font-size:0.76rem;">${tw.note}</span>`;
+      btn.innerHTML = `<span class="ar" style="color:var(--primary);">${tw.text}</span><span style="font-size:0.76rem;">${tw.note}</span>`;
       btn.addEventListener("click", () => {
         updateStreakUI(true);
         playAudioFile(tw.audio);
@@ -914,7 +930,7 @@
       btn.className = "btn";
       btn.style.flexDirection = "column";
       btn.style.padding = "10px 14px";
-      btn.innerHTML = `<span class="ar" style="font-size:2rem; color:var(--primary);">${md.text}</span><span class="region-tag" style="margin:2px 0;">${md.tag}</span><span style="font-size:0.74rem;">${md.note}</span>`;
+      btn.innerHTML = `<span class="ar" style="color:var(--primary);">${md.text}</span><span class="region-tag" style="margin:2px 0;">${md.tag}</span><span style="font-size:0.74rem;">${md.note}</span>`;
       btn.addEventListener("click", () => {
         updateStreakUI(true);
         playAudioFile(md.audio);

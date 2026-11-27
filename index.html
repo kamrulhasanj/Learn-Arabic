@@ -561,6 +561,18 @@
         <input type="range" id="setFontScale" min="0.85" max="1.35" step="0.05" value="1" style="width:100%; accent-color:var(--primary);" />
       </div>
 
+      <div class="setting-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong>🕌 শব্দ ও আয়াতের আরবি ফন্ট</strong>
+          <span id="arabicFontLabel" style="font-weight:700; color:var(--primary);">Amiri</span>
+        </div>
+        <select id="setArabicFont" style="width:100%; padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:var(--glass-strong); color:var(--text); font-family:var(--font-bn); font-size:0.9rem;">
+          <option value="Amiri">Amiri (ডিফল্ট — ক্লাসিক মুসহাফ)</option>
+          <option value="Scheherazade New">Scheherazade New (স্পষ্ট দুই পেশ ও কায়দা)</option>
+        </select>
+        <span style="font-size:0.76rem; color:var(--text-muted);">* শুধু শব্দ, আয়াত ও হরকতে প্রযোজ্য (একক বর্ণমালা অপরিবর্তিত থাকবে)।</span>
+      </div>
+
       <label class="setting-row">
         <div>
           <strong>🎨 কালার-কোডেড তাজবীদ</strong>
@@ -600,7 +612,7 @@
 
       <div class="dev-credit-box">
         <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:4px;">
-          Learn Arabic PWA • বর্তমান ভার্সন: <strong id="appVersionBadge">1.1.12</strong>
+          Learn Arabic PWA • বর্তমান ভার্সন: <strong id="appVersionBadge">1.1.13</strong>
         </div>
         <div style="font-size:0.88rem; font-weight:600;">
           Develop With <span style="color:#e11d48;" aria-label="love">❤️</span> by <strong>Kamrul Hasan</strong>

@@ -1,3 +1,19 @@
+@font-face {
+  font-family: 'Amiri';
+  src: url('fonts/Amiri-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Scheherazade New';
+  src: url('fonts/ScheherazadeNew-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --bg-grad: radial-gradient(circle at 12% 10%, #e7f4ec 0%, transparent 45%),
              radial-gradient(circle at 88% 18%, #fdf3db 0%, transparent 42%),
@@ -22,6 +38,7 @@
   --radius: 20px;
   --font-bn: 'Hind Siliguri', 'Bangla Sangam MN', 'Noto Sans Bengali', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-ar: 'Geeza Pro', 'Amiri', 'Scheherazade New', 'Traditional Arabic', 'Noto Naskh Arabic', serif;
+  --font-ar-word: 'Amiri', 'Scheherazade New', 'Geeza Pro', serif;
   --ar-scale: 1;
 }
 
@@ -2118,6 +2135,26 @@ body.tajweed-colors[data-theme="dark"] .tj-heavy { color: #a78bfa; }
   .install-btn-text {
     display: none;
   }
+}
+
+.dua-ar,
+.top-taawudh-bar,
+.form-ex,
+.m-cell-ex,
+.play-word-btn,
+.harakat-pill .ar,
+.sura-word-ar,
+#tanweenGrid .ar,
+#maddGrid .ar,
+#qalqalahGrid .ar,
+#tashdeedGrid .ar {
+  font-family: var(--font-ar-word);
+}
+
+#tanweenGrid .ar,
+#maddGrid .ar {
+  font-size: calc(2.4rem * var(--ar-scale));
+  line-height: 1.75;
 }
 
 .modal-overlay {

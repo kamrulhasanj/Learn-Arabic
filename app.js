@@ -72,11 +72,6 @@
       todayCount += 1;
       localStorage.setItem("madani_today_count", String(todayCount));
     }
-
-    const streakEl = document.getElementById("streakPill");
-    if (streakEl) {
-      streakEl.textContent = `🔥 ${toBnNum(streak)} • ${toBnNum(todayCount)}টি`;
-    }
   }
 
   // Audio playback
@@ -311,7 +306,7 @@
     document.querySelectorAll(".tab-panel").forEach((panel) => {
       panel.classList.toggle("active", panel.id === `panel-${tabName}`);
     });
-    if (tabName === "quiz" && localStorage.getItem("madani_practice_subtab") === "trace-view") {
+    if (tabName === "writing" && (localStorage.getItem("madani_writing_subtab") || "w-canvas") === "w-canvas") {
       drawTraceWatermark();
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -422,10 +417,10 @@
       </div>
 
       <div style="margin-top:10px; font-weight:600; font-size:0.88rem; color:var(--primary);">
-        বাক্যে হরফের ৪টি রূপ (ডান থেকে বামে):
+        বাক্যে হরফের <span class="forms-count-pc">৪টি</span><span class="forms-count-mob">৩টি</span> রূপ (ডান থেকে বামে):
       </div>
       <div class="forms-strip">
-        <div class="form-box">
+        <div class="form-box form-box--isolated">
           <span class="form-label">পূর্ণ</span>
           <div class="form-ar ar">${letter.forms.isolated}</div>
           <div class="form-ex ar">${letter.char}</div>
@@ -753,7 +748,7 @@
           const l = LETTER_BY_ID[p.letterId];
           return `
             <button type="button" class="word-part-pill" data-id="${p.letterId}" title="${l.bnName} — ${p.pos}">
-              <div class="ar" style="font-size:1.65rem; line-height:1.2;">${p.form}</div>
+              <div class="ar">${p.form}</div>
               <div style="font-size:0.72rem; color:var(--primary); font-weight:600;">${l.bnName}</div>
             </button>
           `;
@@ -761,7 +756,7 @@
         .join("");
 
       card.innerHTML = `
-        <button type="button" class="btn btn-primary play-word-btn" style="font-size:1.8rem; padding:4px 18px; font-family:var(--font-ar);">
+        <button type="button" class="btn btn-primary play-word-btn">
           ${w.word}
         </button>
         <div style="font-size:0.84rem; color:var(--text-muted); margin-top:4px;">অর্থ: ${w.meaning}</div>
@@ -815,30 +810,56 @@
       const card = document.createElement("div");
       card.className = "harakat-card";
       card.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
           <strong>${l.bnName}</strong>
+          <button type="button" class="btn btn-primary harakat-play-all-btn" style="padding:3px 10px; font-size:0.76rem; border-radius:999px;" title="৩টি একসাথে শুনুন">▶ ৩টি</button>
           <span class="ar" style="font-size:1.35rem; color:var(--primary);">${l.char}</span>
         </div>
         <div class="harakat-row">
-          <button type="button" class="harakat-pill" data-audio="audio/h_${l.id}_a.mp3">
+          <button type="button" class="harakat-pill" data-audio="audio/hz_${l.id}_a.mp3">
             <span class="ar">${baseA}</span>
             <span>যবর</span>
           </button>
-          <button type="button" class="harakat-pill" data-audio="audio/h_${l.id}_i.mp3">
+          <button type="button" class="harakat-pill" data-audio="audio/hz_${l.id}_i.mp3">
             <span class="ar">${baseI}</span>
             <span>যের</span>
           </button>
-          <button type="button" class="harakat-pill" data-audio="audio/h_${l.id}_u.mp3">
+          <button type="button" class="harakat-pill" data-audio="audio/hz_${l.id}_u.mp3">
             <span class="ar">${baseU}</span>
             <span>পেশ</span>
           </button>
         </div>
       `;
-      card.querySelectorAll(".harakat-pill").forEach((pill) => {
+
+      const pills = [...card.querySelectorAll(".harakat-pill")];
+      pills.forEach((pill) => {
         pill.addEventListener("click", () => {
+          document.querySelectorAll(".harakat-pill.playing").forEach((el) => el.classList.remove("playing"));
+          pill.classList.add("playing");
           updateStreakUI(true);
-          playAudioFile(pill.dataset.audio);
+          playAudioFile(pill.dataset.audio, () => pill.classList.remove("playing"));
         });
+      });
+
+      card.querySelector(".harakat-play-all-btn").addEventListener("click", () => {
+        updateStreakUI(true);
+        const seq = [
+          { src: `audio/hz_${l.id}_a.mp3`, pill: pills[0] },
+          { src: `audio/hz_${l.id}_i.mp3`, pill: pills[1] },
+          { src: `audio/hz_${l.id}_u.mp3`, pill: pills[2] },
+          { src: `audio/h_${l.id}_a.mp3`, pill: pills[0] },
+          { src: `audio/h_${l.id}_i.mp3`, pill: pills[1] },
+          { src: `audio/h_${l.id}_u.mp3`, pill: pills[2] },
+        ];
+        let stepIdx = 0;
+        const runStep = () => {
+          document.querySelectorAll(".harakat-pill.playing").forEach((el) => el.classList.remove("playing"));
+          if (stepIdx >= seq.length) return;
+          const item = seq[stepIdx++];
+          if (item.pill) item.pill.classList.add("playing");
+          playAudioFile(item.src, runStep);
+        };
+        runStep();
       });
       grid.appendChild(card);
     });
@@ -1061,7 +1082,93 @@
     zone.addEventListener("click", () => setMakhrajFilter(zone.dataset.region));
   });
 
-  // TAB 5: Practice Sub-views (Quiz, Confusing Pairs, Tracing)
+  // TAB 1.5: Dedicated Writing Tab + Madani Qaida Page 6 & 7 (8 Groups, Nuqta, Mashq)
+  function switchWritingSubtab(viewId) {
+    localStorage.setItem("madani_writing_subtab", viewId);
+    document.querySelectorAll(".writing-subtab-btn").forEach((b) => {
+      const active = b.dataset.wview === viewId;
+      b.classList.toggle("btn-primary", active);
+      b.classList.toggle("active", active);
+    });
+    document.querySelectorAll(".writing-subview").forEach((v) => {
+      v.style.display = v.id === viewId ? "block" : "none";
+    });
+    if (viewId === "w-canvas") drawTraceWatermark();
+  }
+
+  document.querySelectorAll(".writing-subtab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => switchWritingSubtab(btn.dataset.wview));
+  });
+
+  function renderWritingGroupsAndNuqta() {
+    const groupsEl = document.getElementById("eightGroupsList");
+    if (groupsEl && DATA.eightWritingGroups) {
+      groupsEl.innerHTML = "";
+      DATA.eightWritingGroups.forEach((g) => {
+        const row = document.createElement("div");
+        row.className = "group-row";
+        const btns = g.ids
+          .map((id) => {
+            const l = LETTER_BY_ID[id];
+            return `<button type="button" class="qaida-mini-btn" data-id="${id}"><span class="ar">${l.char}</span><span style="font-size:0.76rem; color:var(--text-muted);">${l.bnName}</span></button>`;
+          })
+          .join("");
+        row.innerHTML = `<div class="group-label">${g.group}</div><div class="group-letters">${btns}</div>`;
+        row.querySelectorAll(".qaida-mini-btn").forEach((b) => {
+          b.addEventListener("click", () => {
+            const idx = LETTERS.findIndex((x) => x.id === b.dataset.id);
+            if (idx >= 0) {
+              traceIndex = idx;
+              updateTraceLetter(false);
+            }
+            playLetter(LETTER_BY_ID[b.dataset.id]);
+          });
+        });
+        groupsEl.appendChild(row);
+      });
+    }
+
+    const renderNuqtaGrid = (elId, ids) => {
+      const el = document.getElementById(elId);
+      if (!el || !ids) return;
+      el.innerHTML = "";
+      ids.forEach((id) => {
+        const l = LETTER_BY_ID[id];
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "qaida-mini-btn";
+        btn.style.justifyContent = "center";
+        btn.innerHTML = `<span class="ar">${l.char}</span><span style="font-size:0.75rem; color:var(--text-muted);">${l.bnName}</span>`;
+        btn.addEventListener("click", () => playLetter(l));
+        el.appendChild(btn);
+      });
+    };
+
+    renderNuqtaGrid("noNuqtaGrid", DATA.noNuqta14);
+    renderNuqtaGrid("withNuqtaGrid", DATA.withNuqta15);
+
+    const mashqEl = document.getElementById("mashqGrid");
+    if (mashqEl && DATA.mashqPairs) {
+      mashqEl.innerHTML = "";
+      DATA.mashqPairs.forEach(([id1, id2]) => {
+        const l1 = LETTER_BY_ID[id1];
+        const l2 = LETTER_BY_ID[id2];
+        const box = document.createElement("div");
+        box.className = "mashq-pair-box";
+        box.innerHTML = `
+          <button type="button" data-id="${id1}" title="${l1.bnName}">${l1.char}</button>
+          <span style="color:var(--text-muted);">-</span>
+          <button type="button" data-id="${id2}" title="${l2.bnName}">${l2.char}</button>
+        `;
+        box.querySelectorAll("button").forEach((b) => {
+          b.addEventListener("click", () => playLetter(LETTER_BY_ID[b.dataset.id]));
+        });
+        mashqEl.appendChild(box);
+      });
+    }
+  }
+
+  // TAB 5: Practice Sub-views (Quiz, Confusing Pairs, Report)
   function switchPracticeSubtab(viewId) {
     localStorage.setItem("madani_practice_subtab", viewId);
     document.querySelectorAll(".practice-view-btn").forEach((b) => {
@@ -2239,7 +2346,7 @@
     {
       selector: "#alphabetGrid .letter-card",
       tab: "alphabet",
-      title: "১নং সবক: ২৯টি আরবি হরফ",
+      title: "২৯টি আরবি হরফ",
       desc: "যেকোনো হরফে ক্লিক করলে মাদানী কায়দা অনুযায়ী উচ্চারণ, ৪টি রূপ ও নিজ কণ্ঠ রেকর্ড করার অপশন পাবেন।",
     },
     {
@@ -2249,9 +2356,15 @@
       desc: "এখানে ক্লিক করে সবগুলো হরফ একটানা শুনুন, অথবা পাশে থাকা 'লুপ' বাটনে হ্যান্ডস-ফ্রি রিভিশন দিন।",
     },
     {
+      selector: '[data-tab="writing"]',
+      tab: "alphabet",
+      title: "✍️ হাতে লেখা ও ৮ ভাগ",
+      desc: "মাদানী কায়দার ৮ ভাগ, নুকতা পরিচয়, অ্যানিমেটেড ক্যালিগ্রাফি লেখা এবং বাংলা ভয়েস মূল্যায়ন—সব এখানে পাবেন।",
+    },
+    {
       selector: '[data-tab="murakkab"]',
       tab: "alphabet",
-      title: "২নং সবক: মুরাক্কাব (শব্দের রূপ)",
+      title: "মুরাক্কাব (শব্দের রূপ)",
       desc: "বাক্যের শুরু, মাঝ ও শেষে হরফ কীভাবে মিলে লেখা হয়, শব্দ ভেঙে পড়া ও বইয়ের ২৮ ঘরের পরীক্ষা এখানে আছে।",
     },
     {
@@ -2269,8 +2382,8 @@
     {
       selector: '[data-tab="quiz"]',
       tab: "alphabet",
-      title: "অনুশীলন, হাতে লেখা ও রিপোর্ট",
-      desc: "৯ ধরনের কুইজ (৬০সে স্পিড চ্যালেঞ্জ, স্মার্ট রিভিশন), অ্যানিমেটেড হাতে লেখা গাইড ও Mastery Heatmap এখানে।",
+      title: "অনুশীলন, পরীক্ষা ও রিপোর্ট",
+      desc: "৯ ধরনের কুইজ (৬০সে স্পিড চ্যালেঞ্জ, স্মার্ট রিভিশন), একই রকম হরফের পার্থক্য ও Mastery Heatmap এখানে।",
     },
     {
       selector: "#focusToggleBtn",
@@ -2390,16 +2503,20 @@
   renderMakhrajList("all");
   renderConfusingPairs();
   renderHeatmap();
+  renderWritingGroupsAndNuqta();
   updateTraceLetter(false);
   generateQuizQuestion(false);
 
   // Restore last active tab & sub-tabs after reload
+  const savedWritingSubtab = localStorage.getItem("madani_writing_subtab");
+  if (savedWritingSubtab) switchWritingSubtab(savedWritingSubtab);
   const savedHarakatSubtab = localStorage.getItem("madani_harakat_subtab");
   if (savedHarakatSubtab) {
     const hBtn = document.querySelector(`.harakat-subtab-btn[data-hview="${savedHarakatSubtab}"]`);
     if (hBtn) hBtn.click();
   }
-  const savedPracticeSubtab = localStorage.getItem("madani_practice_subtab");
+  let savedPracticeSubtab = localStorage.getItem("madani_practice_subtab");
+  if (savedPracticeSubtab === "trace-view") savedPracticeSubtab = "quiz-view";
   if (savedPracticeSubtab) switchPracticeSubtab(savedPracticeSubtab);
   const savedTab = localStorage.getItem("madani_active_tab");
   if (savedTab && document.getElementById(`panel-${savedTab}`)) {

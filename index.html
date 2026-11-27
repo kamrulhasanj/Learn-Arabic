@@ -48,10 +48,13 @@
   <nav class="nav-tabs" role="tablist" aria-label="পাঠসমূহ">
     <div class="nav-tabs-inner">
       <button class="tab-btn active" data-tab="alphabet" role="tab" aria-selected="true">
-        📖 ১নং: বর্ণমালা
+        📖 বর্ণমালা
+      </button>
+      <button class="tab-btn" data-tab="writing" role="tab" aria-selected="false">
+        ✍️ লেখা ও ৮ ভাগ
       </button>
       <button class="tab-btn" data-tab="murakkab" role="tab" aria-selected="false">
-        🔗 ২নং: মুরাক্কাব
+        🔗 মুরাক্কাব
       </button>
       <button class="tab-btn" data-tab="harakat" role="tab" aria-selected="false">
         ✨ হরকত ও তাজবীদ
@@ -108,12 +111,89 @@
       </div>
     </section>
 
+    <!-- TAB 1.5: লেখা ও আরবী হরফের ৮ ভাগ (মুরাক্কাবের আগে) -->
+    <section class="tab-panel" id="panel-writing">
+      <div class="practice-subtabs" style="margin-bottom:12px;">
+        <button class="btn btn-primary writing-subtab-btn active" data-wview="w-canvas" type="button">✍️ হাতে লেখা</button>
+        <button class="btn writing-subtab-btn" data-wview="w-groups" type="button">📚 ৮ ভাগ ও নুকতা</button>
+      </div>
+
+      <!-- Sub-view A: Hands-on Writing Canvas -->
+      <div id="w-canvas" class="writing-subview">
+        <div class="tracing-wrap">
+          <h2 style="margin:0 0 4px; color:var(--primary);">✍️ হাতে লিখে হরফ অনুশীলন</h2>
+          <p style="margin:0 0 10px; font-size:0.88rem; color:var(--text-muted);">
+            হালকা চিহ্নের উপর মাউস বা আঙুল দিয়ে ডান থেকে বামে লিখে প্র্যাকটিস করুন।
+          </p>
+
+          <div style="display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap;">
+            <button class="btn" id="tracePrevBtn" type="button">⬅</button>
+            <button class="btn" id="tracePickerOpenBtn" type="button" style="min-width:130px; justify-content:center;">
+              <span id="traceLetterLabel">আলিফ (ا)</span> ▾
+            </button>
+            <button class="btn" id="traceNextBtn" type="button">➡</button>
+            <button class="btn btn-primary" id="tracePlayBtn" type="button">🔊</button>
+          </div>
+
+          <div id="traceMetaBar" style="display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap; margin-top:8px;">
+            <span class="region-tag" id="traceBaselineTag">📏 লাইনের উপরে বসে</span>
+            <div id="traceFamilyPills" style="display:flex; gap:4px; direction:rtl;"></div>
+          </div>
+
+          <div class="tracing-canvas-box">
+            <div class="tracing-guide" id="traceGuide">ا</div>
+            <canvas id="traceDemoCanvas" width="380" height="280"></canvas>
+            <canvas id="traceCanvas" width="380" height="280"></canvas>
+          </div>
+
+          <p id="traceTipBox" style="margin:0 0 10px; font-size:0.84rem; color:var(--text-muted);"></p>
+
+          <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap;">
+            <button class="btn btn-primary" id="traceAnimateBtn" type="button">▶ কীভাবে লিখবেন দেখুন</button>
+            <button class="btn" id="traceSpeedBtn" type="button">গতি: ০.৫x</button>
+            <button class="btn btn-gold" id="traceEvalBtn" type="button">🗣️ লেখা যাচাই</button>
+            <button class="btn" id="traceStartBtn" type="button" title="আলিফ থেকে শুরু করুন">⏮ শুরু</button>
+            <button class="btn btn-danger" id="traceClearBtn" type="button">🗑️ মুছুন</button>
+          </div>
+
+          <div id="traceEvalFeedback" class="info-block" style="display:none; margin-top:12px; text-align:left;"></div>
+        </div>
+      </div>
+
+      <!-- Sub-view B: Madani Qaida 8 Groups & Nuqta -->
+      <div id="w-groups" class="writing-subview" style="display:none;">
+        <div class="glass-card" style="padding:16px; margin-bottom:16px;">
+          <h2 style="margin:0 0 4px; font-size:1.15rem; color:var(--primary);">আরবী হরফের ৮ ভাগের পরিচয়</h2>
+          <p style="margin:0 0 12px; font-size:0.88rem; color:var(--text-muted);">
+            আরবী ২৯টি হরফকে লিখিয়া শিক্ষা দেওয়ার সুবিধার্থে ৮ ভাগে ভাগ করা হইয়াছে। যেকোনো হরফে ট্যাপ করলে উচ্চারণ শুনবেন ও লেখার জন্য সেট হবে।
+          </p>
+          <div class="eight-groups-list" id="eightGroupsList"></div>
+        </div>
+
+        <div class="glass-card" style="padding:16px; margin-bottom:16px;">
+          <h3 style="margin:0 0 8px; color:var(--primary);">নুকতা ব্যতীত ১৪ হরফের পরিচয়</h3>
+          <div class="nuqta-grid-4" id="noNuqtaGrid"></div>
+        </div>
+
+        <div class="glass-card" style="padding:16px; margin-bottom:16px;">
+          <h3 style="margin:0 0 8px; color:var(--primary);">নুকতা বিশিষ্ট ১৫ হরফের পরিচয়</h3>
+          <div class="nuqta-grid-4" id="withNuqtaGrid"></div>
+        </div>
+
+        <div class="glass-card" style="padding:16px;">
+          <h3 style="margin:0 0 4px; color:var(--primary);">কাছাকাছি উচ্চারণ বিশিষ্ট হরফগুলোর মশ্‌ক</h3>
+          <p style="margin:0 0 10px; font-size:0.84rem; color:var(--text-muted);">যেকোনো হরফে ক্লিক করে পার্থক্য শুনুন:</p>
+          <div class="mashq-grid" id="mashqGrid"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- TAB 2: ২নং সবক - মুরাক্কাব ও শব্দ গঠন -->
     <section class="tab-panel" id="panel-murakkab">
       <div class="lesson-banner">
         <div>
           <h2 style="margin: 0 0 4px; font-size: 1.18rem; color: var(--primary);">
-            ২নং সবক — মুরাক্কাবের পরিচয় ও শব্দ গঠন
+            মুরাক্কাবের পরিচয় ও শব্দ গঠন
           </h2>
           <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);" id="murakkabNoteText"></p>
         </div>
@@ -156,7 +236,7 @@
       <div class="exam-box">
         <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
           <div>
-            <h3 style="margin: 0; color: var(--primary);">পরীক্ষা (মাদানী কায়দা ২নং সবক)</h3>
+            <h3 style="margin: 0; color: var(--primary);">মুরাক্কাব পরীক্ষা (মাদানী কায়দা)</h3>
             <p style="margin: 2px 0 0; font-size: 0.88rem; color: var(--text-muted);">
               মিলিত হরফগুলোতে ক্লিক করে উচ্চারণ শুনুন এবং কোনটি কোন হরফের কোন রূপ তা যাচাই করুন।
             </p>
@@ -295,10 +375,9 @@
 
     <!-- TAB 5: অনুশীলন ও পরীক্ষা -->
     <section class="tab-panel" id="panel-quiz">
-      <div class="practice-subtabs practice-subtabs-4">
+      <div class="practice-subtabs">
         <button class="btn btn-primary practice-view-btn active" data-view="quiz-view" type="button">🎯 কুইজ</button>
         <button class="btn practice-view-btn" data-view="pairs-view" type="button">⚖️ পার্থক্য</button>
-        <button class="btn practice-view-btn" data-view="trace-view" type="button">✍️ লেখা</button>
         <button class="btn practice-view-btn" data-view="report-view" type="button">📊 রিপোর্ট</button>
       </div>
 
@@ -352,49 +431,7 @@
         <div class="pairs-grid" id="pairsGrid"></div>
       </div>
 
-      <!-- Sub-view 3: Handwriting Tracing Canvas -->
-      <div id="trace-view" class="practice-subview" style="display:none;">
-        <div class="tracing-wrap">
-          <h2 style="margin:0 0 4px; color:var(--primary);">✍️ হাতে লিখে হরফ অনুশীলন</h2>
-          <p style="margin:0 0 10px; font-size:0.88rem; color:var(--text-muted);">
-            হালকা চিহ্নের উপর মাউস বা আঙুল দিয়ে ডান থেকে বামে লিখে প্র্যাকটিস করুন।
-          </p>
-
-          <div style="display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap;">
-            <button class="btn" id="tracePrevBtn" type="button">⬅</button>
-            <button class="btn" id="tracePickerOpenBtn" type="button" style="min-width:130px; justify-content:center;">
-              <span id="traceLetterLabel">আলিফ (ا)</span> ▾
-            </button>
-            <button class="btn" id="traceNextBtn" type="button">➡</button>
-            <button class="btn btn-primary" id="tracePlayBtn" type="button">🔊</button>
-          </div>
-
-          <div id="traceMetaBar" style="display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap; margin-top:8px;">
-            <span class="region-tag" id="traceBaselineTag">📏 লাইনের উপরে বসে</span>
-            <div id="traceFamilyPills" style="display:flex; gap:4px; direction:rtl;"></div>
-          </div>
-
-          <div class="tracing-canvas-box">
-            <div class="tracing-guide" id="traceGuide">ا</div>
-            <canvas id="traceDemoCanvas" width="380" height="280"></canvas>
-            <canvas id="traceCanvas" width="380" height="280"></canvas>
-          </div>
-
-          <p id="traceTipBox" style="margin:0 0 10px; font-size:0.84rem; color:var(--text-muted);"></p>
-
-          <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap;">
-            <button class="btn btn-primary" id="traceAnimateBtn" type="button">▶ কীভাবে লিখবেন দেখুন</button>
-            <button class="btn" id="traceSpeedBtn" type="button">গতি: ০.৫x</button>
-            <button class="btn btn-gold" id="traceEvalBtn" type="button">🗣️ লেখা যাচাই</button>
-            <button class="btn" id="traceStartBtn" type="button" title="আলিফ থেকে শুরু করুন">⏮ শুরু</button>
-            <button class="btn btn-danger" id="traceClearBtn" type="button">🗑️ মুছুন</button>
-          </div>
-
-          <div id="traceEvalFeedback" class="info-block" style="display:none; margin-top:12px; text-align:left;"></div>
-        </div>
-      </div>
-
-      <!-- Sub-view 4: Mastery Heatmap & Report -->
+      <!-- Sub-view 3: Mastery Heatmap & Report -->
       <div id="report-view" class="practice-subview" style="display:none;">
         <div class="glass-card" style="padding:16px;">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
@@ -415,11 +452,15 @@
     </p>
   </main>
 
-  <!-- Mobile App Bottom Navigation Bar -->
+  <!-- Mobile App Bottom Navigation Bar (6 Tabs) -->
   <nav class="mobile-bottom-nav" role="tablist" aria-label="মোবাইল নেভিগেশন">
     <button class="bottom-nav-btn active" data-tab="alphabet" role="tab" aria-selected="true" type="button">
       <span class="bnav-icon">📖</span>
       <span class="bnav-label">বর্ণমালা</span>
+    </button>
+    <button class="bottom-nav-btn" data-tab="writing" role="tab" aria-selected="false" type="button">
+      <span class="bnav-icon">✍️</span>
+      <span class="bnav-label">লেখা</span>
     </button>
     <button class="bottom-nav-btn" data-tab="murakkab" role="tab" aria-selected="false" type="button">
       <span class="bnav-icon">🔗</span>

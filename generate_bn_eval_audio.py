@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
-"""Generate fluent Bengali male-pitched MP3s for offline handwriting evaluation."""
+"""Generate genuine Bangladeshi Bengali male neural voice MP3s (bn-BD-PradeepNeural) for offline evaluation."""
 
+import asyncio
 import os
 import re
-import subprocess
-import tempfile
-import urllib.parse
-import urllib.request
-from concurrent.futures import ThreadPoolExecutor
+import edge_tts
 
 AUDIO_DIR = "/Users/kamrul/Areas/Learn-Arabic/audio"
+VOICE = "bn-BD-PradeepNeural"
 
 PHRASES = {
     "bn_empty": "আপনি এখনো ক্যানভাসে কিছু লেখেননি। হালকা চিহ্নের উপর লিখে তারপর যাচাই করুন।",
@@ -32,34 +30,24 @@ for m in re.finditer(r"(\w+):\s*\{[^}]*?tip:\s*\"([^\"]+)\"", src, re.S):
     PHRASES[f"bn_tip_{lid}"] = f"সঠিক নিয়ম: {tip}"
 
 
-def gen_one(item):
-    key, text = item
-    out_path = os.path.join(AUDIO_DIR, f"{key}.mp3")
-    if os.path.exists(out_path) and os.path.getsize(out_path) > 500:
-        return key
-    url = "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=bn&q=" + urllib.parse.quote(text)
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    raw = urllib.request.urlopen(req, timeout=12).read()
+async def gen_all():
+    sem = asyncio.Semaphore(3)
 
-    with tempfile.TemporaryDirectory() as tmpdir:
-        raw_mp3 = os.path.join(tmpdir, "raw.mp3")
-        with open(raw_mp3, "wb") as f:
-            f.write(raw)
-        # Shift pitch down naturally (~ -3.2 semitones) for a warm male Bengali voice while keeping normal speed
-        subprocess.run(
-            [
-                "ffmpeg", "-y", "-i", raw_mp3,
-                "-af", "asetrate=24000*0.83,aresample=24000,atempo=1/0.83",
-                "-codec:a", "libmp3lame", "-qscale:a", "5", out_path,
-            ],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            check=True,
-        )
-    return key
+    async def gen_one(key, text):
+        out_path = os.path.join(AUDIO_DIR, f"{key}.mp3")
+        async with sem:
+            for attempt in range(3):
+                try:
+                    comm = edge_tts.Communicate(text, VOICE)
+                    await comm.save(out_path)
+                    return
+                except Exception as e:
+                    if attempt == 2:
+                        print(f"Failed {key}: {e}")
+                    await asyncio.sleep(0.5)
+
+    await asyncio.gather(*(gen_one(k, v) for k, v in PHRASES.items()))
+    print(f"Generated {len(PHRASES)} genuine bn-BD-PradeepNeural MP3s.")
 
 
-with ThreadPoolExecutor(max_workers=4) as ex:
-    done = list(ex.map(gen_one, PHRASES.items()))
-
-print(f"Generated {len(done)} Bengali male voice MP3s.")
+asyncio.run(gen_all())

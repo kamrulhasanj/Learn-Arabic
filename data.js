@@ -302,7 +302,7 @@ window.MADANI_DATA = {
       id: "ghain",
       order: 19,
       char: "غ",
-      bnName: "গইন",
+      bnName: "গ্বইন",
       translit: "Ghain",
       audio: "audio/19_ghain.mp3",
       makhrajIds: [3],
@@ -688,6 +688,36 @@ window.MADANI_DATA = {
     }
   ],
 
+  // মাদানী কায়দা পৃষ্ঠা ৬: আরবী হরফের ৮ ভাগের পরিচয়
+  eightWritingGroups: [
+    { group: "১ম ভাগ", ids: ["alif", "meem", "taa_heavy", "zaa_heavy"] },
+    { group: "২য় ভাগ", ids: ["baa", "taa", "thaa", "faa", "kaaf"] },
+    { group: "৩য় ভাগ", ids: ["haa_sharp", "khaa", "jeem"] },
+    { group: "৪র্থ ভাগ", ids: ["raa", "zaa", "waaw", "daal", "dhaal"] },
+    { group: "৫ম ভাগ", ids: ["seen", "sheen", "saad", "daad"] },
+    { group: "৬ষ্ঠ ভাগ", ids: ["noon", "qaaf", "laam"] },
+    { group: "৭ম ভাগ", ids: ["hamzah", "ain", "ghain"] },
+    { group: "৮ম ভাগ", ids: ["haa_soft", "yaa"] }
+  ],
+
+  // মাদানী কায়দা পৃষ্ঠা ৭: নুকতা ব্যতীত ১৪ হরফ, নুকতা বিশিষ্ট ১৫ হরফ ও মশ্ক
+  noNuqta14: ["alif", "haa_sharp", "daal", "raa", "seen", "saad", "taa_heavy", "ain", "kaaf", "laam", "meem", "waaw", "haa_soft", "hamzah"],
+  withNuqta15: ["baa", "taa", "thaa", "jeem", "khaa", "dhaal", "zaa", "sheen", "daad", "zaa_heavy", "ghain", "faa", "qaaf", "noon", "yaa"],
+  mashqPairs: [
+    ["haa_sharp", "haa_soft"],
+    ["taa_heavy", "taa"],
+    ["qaaf", "kaaf"],
+    ["zaa_heavy", "dhaal"],
+    ["zaa", "dhaal"],
+    ["seen", "saad"],
+    ["hamzah", "ain"],
+    ["seen", "thaa"],
+    ["daal", "daad"],
+    ["zaa", "jeem"],
+    ["daad", "zaa_heavy"],
+    ["hamzah", "yaa"]
+  ],
+
   // কাছাকাছি উচ্চারণ ও আকৃতির হরফ (Confusing Pairs Drill)
   confusingPairs: [
     {
@@ -900,7 +930,7 @@ window.MADANI_DATA = {
           { ar: "عَلَيْهِمْ", bn: "আলাইহিম", audio: "audio/sf_22.mp3", rule: "লীন হরফ" }
         ],
         [
-          { ar: "غَيْرِ", bn: "গাইরি", audio: "audio/sf_23.mp3", rule: "গইন (غ) ও লীন" },
+          { ar: "غَيْرِ", bn: "গাইরি", audio: "audio/sf_23.mp3", rule: "গ্বইন (غ) ও লীন" },
           { ar: "الْمَغْضُوْبِ", bn: "ল মাগদূ-বি", audio: "audio/sf_24.mp3", rule: "দ্বদ (ض) ও মাদ" },
           { ar: "عَلَيْهِمْ", bn: "আলাইহিম", audio: "audio/sf_22.mp3", rule: "লীন হরফ" },
           { ar: "وَلَا", bn: "ওয়া লা-", audio: "audio/sf_25.mp3", rule: "১ আলিফ মাদ" },

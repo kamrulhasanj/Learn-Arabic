@@ -2290,6 +2290,7 @@
   }
 
   let deferredInstallPrompt = null;
+  const headerInstallBtn = document.getElementById("headerInstallBtn");
   const installAppBtn = document.getElementById("installAppBtn");
   const installAppRow = document.getElementById("installAppRow");
   const installBanner = document.getElementById("installBanner");
@@ -2301,22 +2302,39 @@
     window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
   const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
 
+  if (isStandalone && headerInstallBtn) {
+    headerInstallBtn.style.display = "none";
+  }
+
   async function triggerPwaInstall() {
     if (deferredInstallPrompt) {
       deferredInstallPrompt.prompt();
-      await deferredInstallPrompt.userChoice;
+      const choice = await deferredInstallPrompt.userChoice;
       deferredInstallPrompt = null;
-      if (installAppRow) installAppRow.style.display = "none";
-      if (installBanner) installBanner.classList.remove("show");
+      if (choice && choice.outcome === "accepted") {
+        if (headerInstallBtn) headerInstallBtn.style.display = "none";
+        if (installAppRow) installAppRow.style.display = "none";
+        if (installBanner) installBanner.classList.remove("show");
+      }
     } else if (isIos) {
-      installBannerSub.textContent = "Safari-এর নিচে Share (⬆️) আইকনে ট্যাপ করে 'Add to Home Screen' সিলেক্ট করুন।";
-      bannerInstallBtn.style.display = "none";
+      if (installBannerSub) {
+        installBannerSub.textContent = "Safari-এর নিচে Share (⬆️) আইকনে ট্যাপ করে 'Add to Home Screen' সিলেক্ট করুন।";
+      }
+      if (bannerInstallBtn) bannerInstallBtn.style.display = "none";
+      if (installBanner) installBanner.classList.add("show");
+    } else if (installBanner) {
+      if (installBannerSub) {
+        installBannerSub.textContent = "ব্রাউজারের অ্যাড্রেস বার বা মেনু (⋮) থেকে 'Install Learn Arabic' / 'Add to Home Screen' সিলেক্ট করুন।";
+      }
+      if (bannerInstallBtn) bannerInstallBtn.style.display = "none";
+      installBanner.classList.add("show");
     }
   }
 
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferredInstallPrompt = e;
+    if (headerInstallBtn && !isStandalone) headerInstallBtn.style.display = "inline-flex";
     if (installAppRow) installAppRow.style.display = "flex";
     if (!isStandalone && !sessionStorage.getItem("madani_install_dismissed")) {
       installBanner.classList.add("show");
@@ -2329,6 +2347,7 @@
     setTimeout(() => installBanner.classList.add("show"), 1200);
   }
 
+  if (headerInstallBtn) headerInstallBtn.addEventListener("click", triggerPwaInstall);
   installAppBtn.addEventListener("click", triggerPwaInstall);
   bannerInstallBtn.addEventListener("click", triggerPwaInstall);
   bannerDismissBtn.addEventListener("click", () => {
@@ -2337,6 +2356,7 @@
   });
 
   window.addEventListener("appinstalled", () => {
+    if (headerInstallBtn) headerInstallBtn.style.display = "none";
     if (installAppRow) installAppRow.style.display = "none";
     if (installBanner) installBanner.classList.remove("show");
   });

@@ -1962,9 +1962,10 @@ body.tajweed-colors[data-theme="dark"] .tj-heavy { color: #a78bfa; }
 .install-banner {
   display: none;
   position: fixed;
-  left: 50%;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
   bottom: 18px;
-  transform: translateX(-50%);
   z-index: 115;
   width: min(94vw, 480px);
   background: var(--glass-strong);
@@ -2097,4 +2098,24 @@ body.tajweed-colors[data-theme="dark"] .tj-heavy { color: #a78bfa; }
   border-color: var(--primary);
   background: var(--primary-soft);
   transform: scale(1.04);
+}
+
+.header-install-btn {
+  background: var(--gold-soft);
+  border-color: rgba(184, 134, 11, 0.45);
+  color: var(--text);
+  font-weight: 600;
+  gap: 4px;
+}
+
+.header-install-btn:hover {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: #fff;
+}
+
+@media (max-width: 480px) {
+  .install-btn-text {
+    display: none;
+  }
 }

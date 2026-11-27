@@ -147,8 +147,15 @@
   const setTajweedColorToggle = document.getElementById("setTajweedColorToggle");
   const setFontScale = document.getElementById("setFontScale");
   const fontScaleLabel = document.getElementById("fontScaleLabel");
-  const setArabicFont = document.getElementById("setArabicFont");
   const arabicFontLabel = document.getElementById("arabicFontLabel");
+  const fontPickCards = document.querySelectorAll("#fontPickerGrid .font-pick-card");
+
+  const ARABIC_WORD_FONTS = {
+    "Amiri": "'Amiri', 'Scheherazade New', 'Geeza Pro', serif",
+    "Scheherazade New": "'Scheherazade New', 'Amiri', 'Geeza Pro', serif",
+    "Noto Naskh Arabic": "'Noto Naskh Arabic', 'Amiri', 'Geeza Pro', serif",
+    "Lateef": "'Lateef', 'Scheherazade New', 'Amiri', serif",
+  };
 
   function applySettings() {
     localStorage.setItem("madani_settings", JSON.stringify(settings));
@@ -158,13 +165,12 @@
     document.body.classList.toggle("hide-makhraj-badges", !settings.showMakhrajBadges);
     document.body.classList.toggle("tajweed-colors", settings.tajweedColors);
     document.documentElement.style.setProperty("--ar-scale", String(settings.fontScale));
-    const chosenFont = settings.arabicFont === "Scheherazade New" ? "Scheherazade New" : "Amiri";
-    const fontStack = chosenFont === "Scheherazade New"
-      ? "'Scheherazade New', 'Amiri', 'Geeza Pro', serif"
-      : "'Amiri', 'Scheherazade New', 'Geeza Pro', serif";
-    document.documentElement.style.setProperty("--font-ar-word", fontStack);
-    if (setArabicFont) setArabicFont.value = chosenFont;
+    const chosenFont = ARABIC_WORD_FONTS[settings.arabicFont] ? settings.arabicFont : "Amiri";
+    document.documentElement.style.setProperty("--font-ar-word", ARABIC_WORD_FONTS[chosenFont]);
     if (arabicFontLabel) arabicFontLabel.textContent = chosenFont;
+    fontPickCards.forEach((card) => {
+      card.classList.toggle("active", card.dataset.font === chosenFont);
+    });
 
     if (settings.darkTheme) {
       document.documentElement.setAttribute("data-theme", "dark");
@@ -248,12 +254,12 @@
   setHapticToggle.addEventListener("change", () => { settings.haptic = setHapticToggle.checked; applySettings(); });
   setTajweedColorToggle.addEventListener("change", () => { settings.tajweedColors = setTajweedColorToggle.checked; applySettings(); });
   setFontScale.addEventListener("input", () => { settings.fontScale = Number(setFontScale.value); applySettings(); });
-  if (setArabicFont) {
-    setArabicFont.addEventListener("change", () => {
-      settings.arabicFont = setArabicFont.value;
+  fontPickCards.forEach((card) => {
+    card.addEventListener("click", () => {
+      settings.arabicFont = card.dataset.font || "Amiri";
       applySettings();
     });
-  }
+  });
 
   // Export & Import Backup
   document.getElementById("exportDataBtn").addEventListener("click", () => {
@@ -2262,7 +2268,21 @@
     }
   }, { passive: true });
 
-  // Force Update App (keeps all localStorage progress & practice data intact)
+  // Clear all Service Worker caches & reload (keeps all localStorage progress & practice data intact)
+  async function clearCachesAndReload() {
+    try {
+      if ("caches" in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+      if ("serviceWorker" in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.update().catch(() => {})));
+      }
+    } catch {}
+    window.location.reload();
+  }
+
   const forceUpdateBtn = document.getElementById("forceUpdateAppBtn");
   const updateCheckStatus = document.getElementById("updateCheckStatus");
   if (forceUpdateBtn) {
@@ -2272,35 +2292,52 @@
         updateCheckStatus.textContent = "আপনি এখন অফলাইনে আছেন। ইন্টারনেট সংযোগ দিয়ে আবার চেষ্টা করুন।";
         return;
       }
-      updateCheckStatus.textContent = "আপডেট চেক করা হচ্ছে... আপনার সব ডেটা সুরক্ষিত আছে।";
+      updateCheckStatus.textContent = "সব ক্যাশ ক্লিয়ার করে আপডেট করা হচ্ছে... আপনার সব ডেটা সুরক্ষিত আছে।";
       forceUpdateBtn.disabled = true;
-      try {
-        if ("caches" in window) {
-          const keys = await caches.keys();
-          await Promise.all(keys.map((k) => caches.delete(k)));
-        }
-        if ("serviceWorker" in navigator) {
-          const regs = await navigator.serviceWorker.getRegistrations();
-          await Promise.all(regs.map((r) => r.update().catch(() => {})));
-        }
-      } catch {}
-      window.location.reload();
+      await clearCachesAndReload();
     });
   }
 
-  // Register Service Worker & show non-intrusive update toast when a new version activates
+  // Register Service Worker & show update toast + footer update button when a new version is ready
   const updateToast = document.getElementById("updateToast");
-  document.getElementById("reloadAppBtn").addEventListener("click", () => window.location.reload());
+  const footerUpdateWrap = document.getElementById("footerUpdateWrap");
+  const footerUpdateBtn = document.getElementById("footerUpdateBtn");
+
+  function showAppUpdateReady() {
+    if (updateToast) updateToast.classList.add("show");
+    if (footerUpdateWrap) footerUpdateWrap.style.display = "block";
+  }
+
+  document.getElementById("reloadAppBtn").addEventListener("click", clearCachesAndReload);
+  if (footerUpdateBtn) {
+    footerUpdateBtn.addEventListener("click", async () => {
+      footerUpdateBtn.disabled = true;
+      footerUpdateBtn.textContent = "🔄 ক্যাশ ক্লিয়ার ও আপডেট হচ্ছে...";
+      await clearCachesAndReload();
+    });
+  }
 
   if ("serviceWorker" in navigator && (location.protocol === "http:" || location.protocol === "https:")) {
     let hadController = Boolean(navigator.serviceWorker.controller);
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       if (hadController) {
-        updateToast.classList.add("show");
+        showAppUpdateReady();
       }
       hadController = true;
     });
     navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then((reg) => {
+      if (reg.waiting && navigator.serviceWorker.controller) {
+        showAppUpdateReady();
+      }
+      reg.addEventListener("updatefound", () => {
+        const nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener("statechange", () => {
+          if (nw.state === "installed" && navigator.serviceWorker.controller) {
+            showAppUpdateReady();
+          }
+        });
+      });
       reg.update().catch(() => {});
     }).catch(() => {});
   }

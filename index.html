@@ -458,6 +458,11 @@
     <p class="footer-note">
       Learn Arabic • মাদানী কায়দা অফলাইন ওয়েব অ্যাপ্লিকেশন • তীর চিহ্ন (←/→) ও Space দিয়ে নিয়ন্ত্রণ করুন।
     </p>
+    <div id="footerUpdateWrap" style="display:none; text-align:center; margin-top:8px;">
+      <button class="btn btn-gold footer-update-btn" id="footerUpdateBtn" type="button">
+        ✨ নতুন আপডেট এসেছে — ক্যাশ ক্লিয়ার করে আপডেট করুন
+      </button>
+    </div>
   </main>
 
   <!-- Mobile App Bottom Navigation Bar (6 Tabs) -->
@@ -566,10 +571,28 @@
           <strong>🕌 শব্দ ও আয়াতের আরবি ফন্ট</strong>
           <span id="arabicFontLabel" style="font-weight:700; color:var(--primary);">Amiri</span>
         </div>
-        <select id="setArabicFont" style="width:100%; padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:var(--glass-strong); color:var(--text); font-family:var(--font-bn); font-size:0.9rem;">
-          <option value="Amiri">Amiri (ডিফল্ট — ক্লাসিক মুসহাফ)</option>
-          <option value="Scheherazade New">Scheherazade New (স্পষ্ট দুই পেশ ও কায়দা)</option>
-        </select>
+        <div class="font-picker-grid" id="fontPickerGrid">
+          <button type="button" class="font-pick-card active" data-font="Amiri">
+            <span class="font-pick-title">Amiri</span>
+            <span class="font-pick-tag">ডিফল্ট • মুসহাফ</span>
+            <span class="font-pick-sample" style="font-family:'Amiri', serif;">بٌ • كِتٰبٌ • لَهٗ</span>
+          </button>
+          <button type="button" class="font-pick-card" data-font="Scheherazade New">
+            <span class="font-pick-title">Scheherazade New</span>
+            <span class="font-pick-tag">স্পষ্ট দুই পেশ</span>
+            <span class="font-pick-sample" style="font-family:'Scheherazade New', serif;">بٌ • كِتٰبٌ • لَهٗ</span>
+          </button>
+          <button type="button" class="font-pick-card" data-font="Noto Naskh Arabic">
+            <span class="font-pick-title">Noto Naskh Arabic</span>
+            <span class="font-pick-tag">মডার্ন নাসখ</span>
+            <span class="font-pick-sample" style="font-family:'Noto Naskh Arabic', serif;">بٌ • كِتٰبٌ • لَهٗ</span>
+          </button>
+          <button type="button" class="font-pick-card" data-font="Lateef">
+            <span class="font-pick-title">Lateef</span>
+            <span class="font-pick-tag">কায়দা স্টাইল</span>
+            <span class="font-pick-sample" style="font-family:'Lateef', serif;">بٌ • كِتٰبٌ • لَهٗ</span>
+          </button>
+        </div>
         <span style="font-size:0.76rem; color:var(--text-muted);">* শুধু শব্দ, আয়াত ও হরকতে প্রযোজ্য (একক বর্ণমালা অপরিবর্তিত থাকবে)।</span>
       </div>
 
@@ -612,7 +635,7 @@
 
       <div class="dev-credit-box">
         <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:4px;">
-          Learn Arabic PWA • বর্তমান ভার্সন: <strong id="appVersionBadge">1.1.13</strong>
+          Learn Arabic PWA • বর্তমান ভার্সন: <strong id="appVersionBadge">1.1.14</strong>
         </div>
         <div style="font-size:0.88rem; font-weight:600;">
           Develop With <span style="color:#e11d48;" aria-label="love">❤️</span> by <strong>Kamrul Hasan</strong>

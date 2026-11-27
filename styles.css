@@ -14,6 +14,22 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'Noto Naskh Arabic';
+  src: url('fonts/NotoNaskhArabic-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lateef';
+  src: url('fonts/Lateef-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --bg-grad: radial-gradient(circle at 12% 10%, #e7f4ec 0%, transparent 45%),
              radial-gradient(circle at 88% 18%, #fdf3db 0%, transparent 42%),
@@ -2155,6 +2171,65 @@ body.tajweed-colors[data-theme="dark"] .tj-heavy { color: #a78bfa; }
 #maddGrid .ar {
   font-size: calc(2.4rem * var(--ar-scale));
   line-height: 1.75;
+}
+
+.font-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.font-pick-card {
+  background: var(--glass-subtle);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 8px 10px;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: var(--text);
+  font-family: var(--font-bn);
+  transition: all 0.15s ease;
+}
+
+.font-pick-card:hover {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.font-pick-card.active {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  box-shadow: 0 0 0 2px var(--primary-soft);
+}
+
+.font-pick-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.font-pick-tag {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  line-height: 1.2;
+}
+
+.font-pick-sample {
+  font-size: 1.35rem;
+  line-height: 1.6;
+  direction: rtl;
+  color: var(--primary);
+  margin-top: 2px;
+}
+
+.footer-update-btn {
+  font-size: 0.86rem;
+  padding: 8px 16px;
+  animation: fadeSlide 0.25s ease;
 }
 
 .modal-overlay {
